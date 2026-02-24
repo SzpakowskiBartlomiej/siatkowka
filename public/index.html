@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zapisy na siatkówkę</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+
+<header>
+    <h1>Zapisy na siatkówkę</h1>
+    <p>Szkoła Podstawowa nr 13 w Siemianowicach Śląskich - Michałkowicach, ul. Barlickiego 2</p>
+    <p>Gramy w każdy czwartek w godzinach 19:30 - 21:40</p>
+    <p>Płatność 12 zł do Jacka gotówką lub blikiem na numer 501 412 701</p>
+</header>
+
+<main>
+    <section class="player-list-section">
+        <h2 id="player-count">Zapisani gracze: 0</h2>
+        <p>Zapisy trwają do czwartku do godz. 16:00. Jeśli zbierze się 8 lub więcej osób, mecz się odbędzie.</p>
+        <h3 id="match-status"></h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Lp.</th>
+                <th>Imię/Pseudonim</th>
+            </tr>
+            </thead>
+            <tbody id="player-table-body">
+            </tbody>
+        </table>
+    </section>
+
+    <section class="absent-list-section">
+        <h3>Nieobecni gracze</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Imię/Pseudonim</th>
+            </tr>
+            </thead>
+            <tbody id="absent-table-body">
+            </tbody>
+        </table>
+    </section>
+
+    <section class="registration-form-section">
+        <h3>Zapisz się na mecz</h3>
+        <form id="player-form">
+            <input type="text" id="player-name-input" placeholder="Wpisz swoje imię" required>
+            <button type="submit" id="add-player-btn">Zapisz się</button>
+        </form>
+
+        <h3>Dodaj do listy nieobecnych</h3>
+        <form id="add-absent-form">
+            <input type="text" id="absent-name-input" placeholder="Wpisz swoje imię" required>
+            <button type="submit" id="add-absent-btn">Nie przyjdę</button>
+        </form>
+
+        <h3>Wypisz się z obu list</h3>
+        <form id="remove-player-form">
+            <input type="text" id="player-name-remove-input" placeholder="Wpisz imię do usunięcia" required>
+            <button type="submit" id="remove-player-btn">Wypisz się</button>
+        </form>
+    </section>
+
+    <p style="text-align: center; font-size: 1.1em;"><a href="/historia">Zobacz historię obecności</a></p>
+
+    <section class="shoutbox-section">
+        <h3>Shoutbox</h3>
+        <form id="shoutbox-form">
+            <input type="text" id="shoutbox-name-input" placeholder="Imię" required>
+            <input type="text" id="shoutbox-message-input" placeholder="Wpisz wiadomość..." required>
+            <button type="submit" id="add-shoutbox-btn">Wyślij</button>
+        </form>
+        <div id="shoutbox-messages">
+        </div>
+        <div id="shoutbox-pagination" class="pagination-container"></div>
+    </section>
+</main>
+
+<footer>
+    <p>&copy; 2025 Strona do zapisów</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

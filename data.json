@@ -1,0 +1,50 @@
+{
+  "presentPlayers": [
+    "Bartek",
+    "test",
+    "asdasd",
+    "tewtwe",
+    "wetdsf",
+    "dsfds",
+    "sdfsd",
+    "sdffds",
+    "dsfsd",
+    "sdfsdwwww",
+    "rerw",
+    "aaaa",
+    "rrrr",
+    "tttt",
+    "yyyy",
+    "uuuu",
+    "iiii",
+    "ooo",
+    "ppp"
+  ],
+  "absentPlayers": [],
+  "shoutboxMessages": [
+    {
+      "name": "Bartek",
+      "message": "Hej, miałem wolną chwilę i postanowiłem zrobić nową wersję strony do zapisów by była trochę bardziej przejrzysta. Teraz zapisani gracze będą sami usuwać się w nocy z czwartku na piątek a historia obecności dostępna pod osobnym linkiem. Jak macie jakieś uwagi/sugestie to piszcie do mnie :)",
+      "timestamp": "22.09.2025, 08:43:27"
+    }
+  ],
+  "attendanceHistory": [
+    {
+      "date": "2025-09-18",
+      "players": [
+        "Bartek",
+        "Michał",
+        "Czesiek",
+        "Natalia",
+        "Tomek",
+        "Robert",
+        "Ania",
+        "Sylwek",
+        "Tymek",
+        "Aldona",
+        "Żuża",
+        "Agata"
+      ]
+    }
+  ]
+}

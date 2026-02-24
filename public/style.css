@@ -1,0 +1,203 @@
+body {
+    font-family: sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    /* ZMIANA: Zmniejszamy padding dla widoku mobilnego */
+    padding: 10px;
+}
+
+header, main, footer {
+    width: 100%;
+    max-width: 800px;
+    background-color: #fff;
+    padding: 20px;
+    margin: 10px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* ZMIANA: Dodajemy box-sizing, aby padding nie psuł szerokości */
+    box-sizing: border-box;
+}
+
+header {
+    text-align: center;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+form {
+    /* ZMIANA: Domyślnie formularze będą w kolumnie */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+input[type="text"] {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#add-player-btn {
+    background-color: #4CAF50;
+}
+#add-player-btn:hover {
+    background-color: #45a049;
+}
+#remove-player-btn {
+    background-color: #f44336;
+}
+#remove-player-btn:hover {
+    background-color: #da190b;
+}
+.player-list-section, .registration-form-section {
+    padding: 20px;
+}
+footer {
+    text-align: center;
+    font-size: 0.8em;
+    color: #777;
+}
+.reserve {
+    color: red;
+    font-weight: bold;
+}
+.absent-list-section {
+    margin-top: 20px;
+}
+#add-absent-btn {
+    background-color: #6c757d;
+}
+#add-absent-btn:hover {
+    background-color: #5a6268;
+}
+#match-status {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Style dla Shoutboxa */
+.shoutbox-section {
+    margin-top: 30px;
+}
+
+/* ZMIANA: Shoutbox domyślnie w kolumnie */
+#shoutbox-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#shoutbox-messages {
+    margin-top: 20px;
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+.shoutbox-message {
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.shoutbox-message:last-child {
+    border-bottom: none;
+}
+.shoutbox-message .timestamp {
+    color: #888;
+    font-size: 0.8em;
+    margin-right: 10px;
+}
+.shoutbox-message .name {
+    font-weight: bold;
+}
+#add-shoutbox-btn {
+    background-color: #007bff;
+}
+#add-shoutbox-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Style dla stronicowania */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin-top: 20px;
+    flex-wrap: wrap; /* ZMIANA: Zawijanie przycisków na małych ekranach */
+}
+.pagination-button {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    color: #007bff;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+}
+.pagination-button:hover {
+    background-color: #f0f0f0;
+}
+.pagination-button.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+.pagination-button:disabled {
+    cursor: not-allowed;
+    color: #ccc;
+}
+
+
+/* NOWA SEKCJA: Style dla większych ekranów (desktop) */
+@media (min-width: 768px) {
+    body {
+        padding: 20px; /* Przywracamy większy padding na desktopie */
+    }
+
+    form {
+        flex-direction: row; /* Formularze z powrotem w rzędzie */
+    }
+
+    #shoutbox-form {
+        display: grid; /* Przywracamy układ siatki dla Shoutboxa */
+        grid-template-columns: 150px 1fr auto;
+        gap: 10px;
+    }
+}
