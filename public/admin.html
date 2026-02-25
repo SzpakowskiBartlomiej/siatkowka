@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administratora - Siatkówka</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-section {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Panel Administratora</h1>
+        <p><a href="/">Powrót do strony głównej</a></p>
+    </header>
+
+    <main>
+        <section class="admin-section">
+            <h2>Zarządzanie listami</h2>
+            <p>Poniższy przycisk ręcznie uruchamia archiwizację obecnej listy obecności (dodaje do historii) i czyści listy zapisanych oraz nieobecnych graczy.</p>
+            <button id="archive-btn" class="btn-danger">Archiwizuj i Resetuj Listy</button>
+            <p id="status-message" style="margin-top: 20px; font-weight: bold;"></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Panel Admina</p>
+    </footer>
+
+    <script>
+        document.getElementById('archive-btn').addEventListener('click', async () => {
+            if (!confirm('Czy na pewno chcesz zarchiwizować i wyczyścić listy? Tej operacji nie można cofnąć.')) {
+                return;
+            }
+
+            const statusMsg = document.getElementById('status-message');
+            statusMsg.textContent = 'Przetwarzanie...';
+            statusMsg.style.color = 'blue';
+
+            try {
+                const response = await fetch('/api/archive', { method: 'POST' });
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusMsg.textContent = data.message;
+                    statusMsg.style.color = 'green';
+                } else {
+                    statusMsg.textContent = 'Błąd: ' + (data.message || 'Nieznany błąd');
+                    statusMsg.style.color = 'red';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                statusMsg.textContent = 'Wystąpił błąd połączenia z serwerem.';
+                statusMsg.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>
