@@ -1,27 +1,99 @@
 {
   "presentPlayers": [
-    "Bartek",
-    "test",
-    "asdasd",
-    "tewtwe",
-    "wetdsf",
-    "dsfds",
-    "sdfsd",
-    "sdffds",
-    "dsfsd",
-    "sdfsdwwww",
-    "rerw",
-    "aaaa",
-    "rrrr",
-    "tttt",
-    "yyyy",
-    "uuuu",
-    "iiii",
-    "ooo",
-    "ppp"
+    "26.02 nie ma sali"
   ],
   "absentPlayers": [],
   "shoutboxMessages": [
+    {
+      "name": "Tomek",
+      "message": "Będę lekko spóźniony tak pewnie koło 19:15",
+      "timestamp": "19.02.2026, 11:38:50"
+    },
+    {
+      "name": "Jac",
+      "message": "Dzisiaj zaczynamy o 19.00 !!!",
+      "timestamp": "19.02.2026, 09:00:03"
+    },
+    {
+      "name": "Jac",
+      "message": "Potwierdzone w szkole ! Gramy 19.02 ale od godziny 19.00!!   26.02 nie gramy…",
+      "timestamp": "13.02.2026, 13:04:50"
+    },
+    {
+      "name": "Ania",
+      "message": "Ok, założę odświętne nakolanniki 🤣🤣🤣",
+      "timestamp": "22.01.2026, 17:01:28"
+    },
+    {
+      "name": "Jac",
+      "message": "Dziś mamy gości z zaprzyjaźnionej ekipy Maciejkowickiej.. Proszę ubrać się odświętnie ;)))",
+      "timestamp": "22.01.2026, 12:29:16"
+    },
+    {
+      "name": "Natalia",
+      "message": "Aha. No szkoda. To Zdrowych i Spokojnych Świąt Bożego Narodzenia dla wszystkich graczy. I do zobaczenia w przyszłym roku!",
+      "timestamp": "17.12.2025, 16:50:25"
+    },
+    {
+      "name": "Jac",
+      "message": "Szkoła szykuje Jasełka….",
+      "timestamp": "16.12.2025, 11:02:53"
+    },
+    {
+      "name": "Jac",
+      "message": "Właśnie miałem telefon ze szkoły… w czwartek 18.12 sala nie będzie dostępna….",
+      "timestamp": "16.12.2025, 11:02:26"
+    },
+    {
+      "name": "Michał",
+      "message": "Ja też mogę grać",
+      "timestamp": "30.10.2025, 14:39:02"
+    },
+    {
+      "name": "Bartek",
+      "message": "Mogę grać w 7",
+      "timestamp": "30.10.2025, 14:34:26"
+    },
+    {
+      "name": "Tomek",
+      "message": "Jestem chętny",
+      "timestamp": "30.10.2025, 14:23:53"
+    },
+    {
+      "name": "Ania",
+      "message": "Czy spotykamy się dziś w 7 osób ? Szkoda tego odwoływać … dajcie znać czy jesteście chętni na grę w 7 🤗🤗🤗",
+      "timestamp": "30.10.2025, 13:40:19"
+    },
+    {
+      "name": "Jacek",
+      "message": "Droga Siatkarska Rodzinko… pozwoliłem sobie, z naszej wspólnej skarbonki wyłożyć  60 zł  jako nasz skromny wkład do wieńca na pożegnanie Darka…",
+      "timestamp": "6.10.2025, 20:17:09"
+    },
+    {
+      "name": "Natalia",
+      "message": "Pogrzeb Darka w środę 08.10 o 9:30 w kościele pw. Michała Archanioła w Siemianowicach Śląskich (Michałkowice)",
+      "timestamp": "6.10.2025, 08:23:14"
+    },
+    {
+      "name": "Marek",
+      "message": ":( [`]",
+      "timestamp": "1.10.2025, 06:51:39"
+    },
+    {
+      "name": "Tomek",
+      "message": ":(",
+      "timestamp": "24.09.2025, 19:14:44"
+    },
+    {
+      "name": "Natalia",
+      "message": "Mam bardzo złą wiadomość od kolegi naszego Darka. Podczas swojego urlopu w Portugalii, Darek utopił się w morzu. Piszę, bo nie wiem czy będę w ten czwartek. Sylwek da znać jak będą jakieś informacje na temat pogrzebu.",
+      "timestamp": "23.09.2025, 18:15:50"
+    },
+    {
+      "name": "Jac",
+      "message": "Fajna niespodzianka na nowy sezon… oby nowa strona zapewniła Nam frekwencję ;))",
+      "timestamp": "22.09.2025, 10:16:25"
+    },
     {
       "name": "Bartek",
       "message": "Hej, miałem wolną chwilę i postanowiłem zrobić nową wersję strony do zapisów by była trochę bardziej przejrzysta. Teraz zapisani gracze będą sami usuwać się w nocy z czwartku na piątek a historia obecności dostępna pod osobnym linkiem. Jak macie jakieś uwagi/sugestie to piszcie do mnie :)",
@@ -29,6 +101,300 @@
     }
   ],
   "attendanceHistory": [
+    {
+      "date": "2026-02-19",
+      "players": [
+        "Bartek",
+        "Michał",
+        "Tomek",
+        "Ania",
+        "Aldona",
+        "Zuza",
+        "Marcin",
+        "Agata K",
+        "Ula",
+        "Wojtek",
+        "Tadeusz",
+        "Natalia"
+      ]
+    },
+    {
+      "date": "2026-02-12",
+      "players": [
+        "Michał",
+        "Tomek",
+        "Aldona",
+        "Natalia",
+        "Bartek",
+        "Jac",
+        "Ania",
+        "Robert",
+        "Artur",
+        "Marek",
+        "Sylwek",
+        "Tadeusz"
+      ]
+    },
+    {
+      "date": "2026-02-05",
+      "players": [
+        "Bartek",
+        "Michał",
+        "Ania",
+        "Tomek",
+        "Natalia",
+        "Agata K",
+        "Robert",
+        "Marek",
+        "Sylwek",
+        "Tadeusz",
+        "Wojtek",
+        "Aldona"
+      ]
+    },
+    {
+      "date": "2026-01-29",
+      "players": [
+        "Michał",
+        "Bartek",
+        "Tomek",
+        "Jac",
+        "Ania",
+        "Natalia",
+        "Agata K",
+        "Wojtek D",
+        "Sylwek",
+        "Aldona",
+        "Marek",
+        "Kazik"
+      ]
+    },
+    {
+      "date": "2026-01-22",
+      "players": [
+        "Jac",
+        "Bartek",
+        "Michał",
+        "Tomek",
+        "Agata K",
+        "Ania",
+        "Aldona",
+        "Dorota",
+        "Gość 1",
+        "Gość 2",
+        "Gość 3",
+        "Gość 4",
+        "Tadeusz"
+      ]
+    },
+    {
+      "date": "2026-01-15",
+      "players": [
+        "Michał",
+        "Jac",
+        "Bartek",
+        "Agata K",
+        "Aldona",
+        "Tomek",
+        "Sylwek",
+        "Wojtek",
+        "Tadeusz",
+        "Robert"
+      ]
+    },
+    {
+      "date": "2026-01-08",
+      "players": [
+        "Michał",
+        "Bartek",
+        "Tomek",
+        "Jac",
+        "Agata K",
+        "Ania",
+        "Robert",
+        "Sylwek",
+        "Aldona",
+        "Wojtek",
+        "Tadeusz",
+        "Natalia"
+      ]
+    },
+    {
+      "date": "2026-01-01",
+      "players": [
+        "Nie ma sali, widzimy się w styczniu. Wesołych świąt i szczęśliwego nowego roku 🙂"
+      ]
+    },
+    {
+      "date": "2025-12-11",
+      "players": [
+        "Nie ma siatkówki 11.12 na sali jest kiermasz świąteczny. Widzimy się 18.12."
+      ]
+    },
+    {
+      "date": "2025-12-04",
+      "players": [
+        "Bartek",
+        "Natalia",
+        "Agata K",
+        "Aldona",
+        "Tomek",
+        "Sylwek",
+        "Wojtek",
+        "Tadeusz",
+        "Damian gosc",
+        "Mariusz gosc",
+        "Piotr gość",
+        "Gosia gość"
+      ]
+    },
+    {
+      "date": "2025-11-27",
+      "players": [
+        "Michał",
+        "Bartek",
+        "Aldona",
+        "Agata K",
+        "Tomek",
+        "Dawid kolega Agaty",
+        "Michał kolega Agaty",
+        "Wiktor kolega Agaty",
+        "Natalia",
+        "Wojtek",
+        "Tadeusz",
+        "Sylwek"
+      ]
+    },
+    {
+      "date": "2025-11-20",
+      "players": [
+        "Michał",
+        "Bartek",
+        "Tomek",
+        "Agata K",
+        "Ania",
+        "Aldona",
+        "Sylwek",
+        "Czesiek",
+        "Natalia",
+        "Tadeusz"
+      ]
+    },
+    {
+      "date": "2025-11-13",
+      "players": [
+        "Bartek",
+        "Michał",
+        "Tomek",
+        "Agata K",
+        "Aldona",
+        "Ania",
+        "Sylwek",
+        "Marek",
+        "Kazik",
+        "Tadeusz",
+        "Wojtek",
+        "Kinga"
+      ]
+    },
+    {
+      "date": "2025-11-06",
+      "players": [
+        "Bartek",
+        "Ania",
+        "Michał",
+        "Aldona",
+        "Tomek",
+        "Jac",
+        "Marcin K.",
+        "Natalia",
+        "Sylwek",
+        "Marek",
+        "Albert"
+      ]
+    },
+    {
+      "date": "2025-10-30",
+      "players": [
+        "Bartek",
+        "Michał",
+        "Ania",
+        "Tomek",
+        "Aldona",
+        "Agata K",
+        "Sylwek",
+        "Tadeusz",
+        "Robert",
+        "Marek",
+        "Kazik"
+      ]
+    },
+    {
+      "date": "2025-10-23",
+      "players": [
+        "Brak sali 23.10, gramy dopiero 30.10"
+      ]
+    },
+    {
+      "date": "2025-10-16",
+      "players": [
+        "Michał",
+        "Bartek",
+        "Ania",
+        "Agata K",
+        "Aldona",
+        "Sylwek",
+        "Wojtek",
+        "Tadeusz",
+        "Robert",
+        "Czesiek",
+        "Tomek (pewnie od drugiego seta)"
+      ]
+    },
+    {
+      "date": "2025-10-09",
+      "players": [
+        "Bartek",
+        "Michał",
+        "Aldona",
+        "Tomek",
+        "Ania",
+        "Agata",
+        "Marek",
+        "Sylwek",
+        "Zuza"
+      ]
+    },
+    {
+      "date": "2025-10-02",
+      "players": [
+        "Bartek",
+        "Czesiek",
+        "Michał",
+        "Tomek",
+        "Ania",
+        "Jac",
+        "Aldona",
+        "Marek",
+        "Sylwek",
+        "Kinga",
+        "Marcin K.",
+        "Ula"
+      ]
+    },
+    {
+      "date": "2025-09-25",
+      "players": [
+        "Bartek",
+        "Ania",
+        "Tomek",
+        "Robert",
+        "Agata K",
+        "Aldona",
+        "Sylwek",
+        "Tymek"
+      ]
+    },
     {
       "date": "2025-09-18",
       "players": [
