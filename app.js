@@ -19,14 +19,27 @@ function commitDataJson(message) {
     const commitMessage = message || 'Automatyczny zapis zmian w data.json';
     exec(`git add data.json && git commit -m "${commitMessage}"`, (error, stdout, stderr) => {
         if (error) {
-            console.error(`Błąd podczas commitowania: ${error.message}`);
+            if (stderr.includes('nothing to commit')) {
+                console.log('Brak zmian w data.json do zacommitowania.');
+            } else if (stderr.includes('Please tell me who you are')) {
+                console.error('############################################################################');
+                console.error('### BŁĄD KRYTYCZNY: Git user.name lub user.email nie jest skonfigurowany! ###');
+                console.error('### Na serwerze, w katalogu aplikacji, uruchom:                        ###');
+                console.error('### git config user.name "NazwaBota"                                   ###');
+                console.error('### git config user.email "bot@example.com"                            ###');
+                console.error('############################################################################');
+            } else {
+                // This is another, unexpected error.
+                console.error(`Błąd podczas commitowania: ${error.message}`);
+                console.error(`Git stderr: ${stderr}`);
+            }
             return;
         }
-        if (stderr) {
-            console.error(`Git stderr: ${stderr}`);
-            return;
-        }
+        // Success case
         console.log(`Pomyślnie zacommitowano zmiany w data.json: ${stdout}`);
+        if (stderr) {
+            console.warn(`Git stderr (info): ${stderr}`);
+        }
     });
 }
 
