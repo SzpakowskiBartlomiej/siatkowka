@@ -5,7 +5,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const cron = require('node-cron');
-const { exec } = require('child_process');
+const { execSync } = require('child_process');
 
 const app = express();
 const dataPath = path.join(__dirname, 'data.json');
@@ -17,30 +17,38 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Funkcja do commitowania zmian w data.json
 function commitDataJson(message) {
     const commitMessage = message || 'Automatyczny zapis zmian w data.json';
-    exec(`git add data.json && git commit -m "${commitMessage}"`, (error, stdout, stderr) => {
-        if (error) {
-            if (stderr.includes('nothing to commit')) {
-                console.log('Brak zmian w data.json do zacommitowania.');
-            } else if (stderr.includes('Please tell me who you are')) {
-                console.error('############################################################################');
-                console.error('### BŁĄD KRYTYCZNY: Git user.name lub user.email nie jest skonfigurowany! ###');
-                console.error('### Na serwerze, w katalogu aplikacji, uruchom:                        ###');
-                console.error('### git config user.name "NazwaBota"                                   ###');
-                console.error('### git config user.email "bot@example.com"                            ###');
-                console.error('############################################################################');
-            } else {
-                // This is another, unexpected error.
-                console.error(`Błąd podczas commitowania: ${error.message}`);
-                console.error(`Git stderr: ${stderr}`);
-            }
+    try {
+        // Sprawdzamy, czy są zmiany w pliku data.json
+        const gitStatus = execSync('git status --porcelain data.json', { cwd: __dirname }).toString();
+        if (gitStatus.trim() === '') {
+            console.log('Brak zmian w data.json do zacommitowania.');
             return;
         }
-        // Success case
+
+        console.log('Wykryto zmiany w data.json. Próba commitowania...');
+        execSync('git add data.json', { cwd: __dirname, stdio: 'inherit' });
+        const stdout = execSync(`git commit -m "${commitMessage}"`, { cwd: __dirname }).toString();
         console.log(`Pomyślnie zacommitowano zmiany w data.json: ${stdout}`);
-        if (stderr) {
-            console.warn(`Git stderr (info): ${stderr}`);
+
+    } catch (error) {
+        const stderr = error.stderr ? error.stderr.toString() : '';
+        if (stderr.includes('Please tell me who you are')) {
+            console.error('############################################################################');
+            console.error('### BŁĄD KRYTYCZNY: Git user.name lub user.email nie jest skonfigurowany! ###');
+            console.error('### Na serwerze, w katalogu aplikacji, uruchom:                        ###');
+            console.error('### git config user.name "NazwaBota"                                   ###');
+            console.error('### git config user.email "bot@example.com"                            ###');
+            console.error('############################################################################');
+        } else {
+            console.error(`Błąd podczas commitowania: ${error.message}`);
+            if (stderr) {
+                console.error(`Git stderr: ${stderr}`);
+            }
+            if (error.stdout) {
+                console.error(`Git stdout: ${error.stdout.toString()}`);
+            }
         }
-    });
+    }
 }
 
 // Funkcje do odczytu i zapisu danych
@@ -56,8 +64,10 @@ function readData() {
 
 function writeData(data, commitMessage) {
     try {
+        // Zapisz do pliku
         fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-        commitDataJson(commitMessage); // Commituj zmiany po zapisie
+        // A następnie spróbuj zacommitować
+        commitDataJson(commitMessage);
     } catch (error) {
         console.error('Błąd podczas zapisu do pliku data.json:', error);
     }
