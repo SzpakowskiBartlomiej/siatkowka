@@ -5,6 +5,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const cron = require('node-cron');
+const { exec } = require('child_process');
 
 const app = express();
 const dataPath = path.join(__dirname, 'data.json');
@@ -12,6 +13,22 @@ const dataPath = path.join(__dirname, 'data.json');
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Funkcja do commitowania zmian w data.json
+function commitDataJson(message) {
+    const commitMessage = message || 'Automatyczny zapis zmian w data.json';
+    exec(`git add data.json && git commit -m "${commitMessage}"`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Błąd podczas commitowania: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`Git stderr: ${stderr}`);
+            return;
+        }
+        console.log(`Pomyślnie zacommitowano zmiany w data.json: ${stdout}`);
+    });
+}
 
 // Funkcje do odczytu i zapisu danych
 function readData() {
@@ -24,9 +41,10 @@ function readData() {
     }
 }
 
-function writeData(data) {
+function writeData(data, commitMessage) {
     try {
         fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+        commitDataJson(commitMessage); // Commituj zmiany po zapisie
     } catch (error) {
         console.error('Błąd podczas zapisu do pliku data.json:', error);
     }
@@ -37,6 +55,7 @@ function archiveAndResetLists() {
     console.log('Uruchamiam proces archiwizacji listy obecności...');
     const data = readData();
     let message = 'Nie było zapisanych graczy. Listy zostały wyczyszczone.';
+    let commitMessage = 'Archiwizacja: Brak graczy, listy wyczyszczone.';
 
     if (data.presentPlayers && data.presentPlayers.length > 0) {
         const gameDate = new Date();
@@ -53,12 +72,13 @@ function archiveAndResetLists() {
 
         data.attendanceHistory.unshift(newHistoryEntry);
         message = `Pomyślnie zarchiwizowano listę obecności z dnia: ${dateString}. Zapisano ${newHistoryEntry.players.length} graczy.`;
+        commitMessage = `Archiwizacja: Zapisano ${newHistoryEntry.players.length} graczy z dnia ${dateString}.`;
     }
 
     // Niezależnie od wszystkiego, czyścimy listy na następny tydzień
     data.presentPlayers = [];
     data.absentPlayers = [];
-    writeData(data);
+    writeData(data, commitMessage);
 
     console.log(message);
     return message; // Zwracamy komunikat o wyniku
@@ -83,7 +103,7 @@ app.post('/api/data', (req, res) => {
         const { presentPlayers, absentPlayers } = req.body;
         currentData.presentPlayers = presentPlayers;
         currentData.absentPlayers = absentPlayers;
-        writeData(currentData);
+        writeData(currentData, 'Aktualizacja list graczy');
         res.status(200).json({ message: 'Dane graczy zostały pomyślnie zaktualizowane' });
     } catch (error) {
         res.status(500).json({ message: 'Błąd serwera podczas zapisu danych graczy' });
@@ -104,7 +124,7 @@ app.post('/api/shoutbox', (req, res) => {
         if (data.shoutboxMessages.length > 50) {
             data.shoutboxMessages.pop();
         }
-        writeData(data);
+        writeData(data, `Nowa wiadomość w shoutboxie od ${name}`);
         res.status(201).json({ message: 'Wiadomość została dodana.' });
     } catch (error) {
         res.status(500).json({ message: 'Błąd serwera podczas zapisu wiadomości' });
