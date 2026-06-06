@@ -72,6 +72,8 @@ async function fetchData() {
     }
 }
 
+// --- ZMODYFIKOWANE FUNKCJE ZAPISU Z LOGOWANIEM ODPOWIEDZI ---
+
 // Funkcja do zapisywania DANYCH GRACZY na serwerze
 async function savePlayerData(dataToSave) {
     try {
@@ -80,11 +82,39 @@ async function savePlayerData(dataToSave) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ presentPlayers: dataToSave.presentPlayers, absentPlayers: dataToSave.absentPlayers }),
         });
-        if (!response.ok) throw new Error('Nie udało się zapisać danych na serwerze.');
+        const result = await response.json(); // Zawsze odczytujemy odpowiedź JSON
+        console.log('Odpowiedź serwera (savePlayerData):', result); // Logujemy ją w konsoli
+
+        if (!response.ok) {
+            // Jeśli status to błąd (np. 500), rzucamy błąd, aby wyświetlić alert
+            throw new Error(result.message || 'Nie udało się zapisać danych na serwerze.');
+        }
     } catch (error) {
         console.error('Błąd zapisu danych:', error);
+        alert(error.message); // Wyświetlamy błąd użytkownikowi
     }
 }
+
+// Funkcja do zapisywania wiadomości w SHOUTBOXIE
+async function saveShoutboxMessage(name, message) {
+    try {
+        const response = await fetch('/api/shoutbox', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, message })
+        });
+        const result = await response.json();
+        console.log('Odpowiedź serwera (saveShoutboxMessage):', result);
+
+        if (!response.ok) {
+            throw new Error(result.message || 'Błąd serwera przy dodawaniu wiadomości.');
+        }
+    } catch (error) {
+        console.error('Błąd wysyłania wiadomości:', error);
+        alert(error.message);
+    }
+}
+
 
 // Renderowanie wiadomości w Shoutboxie (z logiką stronicowania)
 function renderShoutbox(messages) {
@@ -141,7 +171,7 @@ function renderUI() {
     renderShoutbox(allData.shoutboxMessages);
 }
 
-// ... event listenery bez zmian, ale używają `allData` i `fetchData()` ...
+// --- ZMODYFIKOWANE EVENT LISTENERY ---
 addPlayerForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const newName = playerNameInput.value.trim();
@@ -151,8 +181,8 @@ addPlayerForm.addEventListener('submit', async (event) => {
     }
     allData.absentPlayers = allData.absentPlayers.filter(p => p.toLowerCase() !== newName.toLowerCase());
     allData.presentPlayers.push(newName);
-    await savePlayerData(allData);
-    await fetchData();
+    await savePlayerData(allData); // Zapisz dane i zaloguj odpowiedź
+    await fetchData(); // Odśwież UI
     playerNameInput.value = '';
 });
 
@@ -192,20 +222,11 @@ shoutboxForm.addEventListener('submit', async (event) => {
     const name = shoutboxNameInput.value.trim();
     const message = shoutboxMessageInput.value.trim();
     if (!name || !message) return;
-    try {
-        const response = await fetch('/api/shoutbox', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, message })
-        });
-        if (!response.ok) throw new Error('Błąd serwera przy dodawaniu wiadomości.');
-        shoutboxCurrentPage = 1; // Wróć na pierwszą stronę po dodaniu wiadomości
-        await fetchData();
-        shoutboxMessageInput.value = '';
-    } catch (error) {
-        console.error('Błąd wysyłania wiadomości:', error);
-        alert('Nie udało się wysłać wiadomości.');
-    }
+
+    await saveShoutboxMessage(name, message); // Zapisz wiadomość i zaloguj odpowiedź
+    shoutboxCurrentPage = 1;
+    await fetchData();
+    shoutboxMessageInput.value = '';
 });
 
 // Wczytanie i renderowanie danych po załadowaniu strony

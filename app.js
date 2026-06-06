@@ -19,44 +19,46 @@ const dataPath = path.join(__dirname, 'data.json');
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- NOWA, BARDZIEJ ROZBUDOWANA FUNKCJA GIT ---
+// --- NOWA FUNKCJA GIT Z ROZBUDOWANYM LOGOWANIEM ---
 async function commitAndPushDataJson(message) {
+    const logs = [];
     const commitMessage = message || 'Automatyczny zapis zmian w data.json';
+
     try {
-        // KROK 1: Sprawdzamy, czy plik data.json faktycznie się zmienił
+        logs.push("Krok 1: Sprawdzanie statusu repozytorium...");
         const status = await git.status();
+        logs.push(`Status repozytorium: ${JSON.stringify(status)}`);
+
         if (!status.modified.includes('data.json')) {
-            console.log('Brak zmian w data.json do zacommitowania.');
-            return; // Zakończ funkcję, jeśli nie ma zmian
+            logs.push("Wniosek: Plik data.json nie został zmodyfikowany. Zakończono operację Git.");
+            return { success: true, summary: 'No changes detected', logs };
         }
 
-        console.log('Wykryto zmiany w data.json. Próba commitu i pusha...');
-
-        // KROK 2: Konfiguracja tożsamości bota (kluczowe dla hostingów współdzielonych)
-        // Używamy zmiennych środowiskowych lub domyślnych wartości
+        logs.push("Krok 2: Wykryto zmiany. Konfiguracja tożsamości bota...");
         const gitUser = process.env.GIT_USER || 'SiatkaBot';
         const gitEmail = process.env.GIT_EMAIL || 'bot@siatka.local';
         await git.addConfig('user.name', gitUser, false, 'local');
         await git.addConfig('user.email', gitEmail, false, 'local');
-        console.log(`Ustawiono tożsamość gita na: ${gitUser} <${gitEmail}>`);
+        logs.push(`Tożsamość ustawiona na: ${gitUser} <${gitEmail}>`);
 
-        // KROK 3: Commit
+        logs.push("Krok 3: Dodawanie pliku data.json do przechowalni (staging)...");
         await git.add('data.json');
-        const commitSummary = await git.commit(commitMessage);
-        console.log(`Pomyślnie zacommitowano zmiany:`, commitSummary);
+        logs.push("Plik dodany.");
 
-        // KROK 4: Push
-        // Ta operacja najprawdopodobniej się nie uda bez uwierzytelnienia!
-        // Spodziewamy się błędu, który zobaczymy w przeglądarce.
-        console.log('Próba wypchnięcia zmian na serwer zdalny (push)...');
-        await git.push('origin', 'main'); // Zakładam, że gałąź to "main"
-        console.log('Pomyślnie wypchnięto zmiany na serwer zdalny!');
+        logs.push("Krok 4: Tworzenie commita...");
+        const commitSummary = await git.commit(commitMessage);
+        logs.push(`Commit utworzony pomyślnie: ${commitSummary.commit}`);
+
+        logs.push("Krok 5: Wypychanie zmian na serwer zdalny (push)...");
+        await git.push('origin', 'main');
+        logs.push("Zmiany zostały pomyślnie wypchnięte!");
+
+        return { success: true, summary: commitSummary, logs };
 
     } catch (error) {
-        console.error('### KRYTYCZNY BŁĄD PODCZAS OPERACJI GIT (commit/push) ###');
-        console.error(error); // To zobaczymy w logach serwera (jeśli działają)
-        // Rzucamy błąd dalej, aby endpoint API mógł go złapać i wysłać do przeglądarki
-        throw error;
+        logs.push(`### KRYTYCZNY BŁĄD PODCZAS OPERACJI GIT: ${error.message} ###`);
+        console.error("Błąd operacji Git:", error);
+        return { success: false, error: error.message, logs };
     }
 }
 
@@ -72,14 +74,12 @@ function readData() {
     }
 }
 
-// Zmieniamy funkcję na asynchroniczną, aby poczekać na zakończenie commita i pusha
 async function writeData(data, commitMessage) {
-    // Usunęliśmy try-catch, aby błędy z git-a "leciały" wyżej do endpointu
     fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-    await commitAndPushDataJson(commitMessage);
+    // Zwróć wynik operacji gita, aby endpoint mógł go odczytać
+    return await commitAndPushDataJson(commitMessage);
 }
 
-// Funkcja z logiką archiwizacji, również asynchroniczna
 async function archiveAndResetLists() {
     console.log('Uruchamiam proces archiwizacji listy obecności...');
     const data = readData();
@@ -105,22 +105,27 @@ async function archiveAndResetLists() {
 
     data.presentPlayers = [];
     data.absentPlayers = [];
-    await writeData(data, commitMessage); // Czekamy na zapis, commit i push
+    const gitResult = await writeData(data, commitMessage);
 
     console.log(message);
-    return message;
+    // Zwracamy zarówno wiadomość dla użytkownika, jak i wynik operacji gita
+    return { userMessage: message, gitResult };
 }
 
-// --- ENDPOINTY APLIKACJI (Z OBSŁUGĄ BŁĘDÓW WYSYŁANYCH DO PRZEGLĄDARKI) ---
+// --- ENDPOINTY APLIKACJI Z ZASZYTYM ZWRACANIEM LOGÓW ---
 
 app.get('/api/data', (req, res) => {
-    try {
-        const data = readData();
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ message: 'Błąd serwera podczas odczytu danych' });
-    }
+    res.json(readData());
 });
+
+// Funkcja pomocnicza do wysyłania odpowiedzi
+function sendGitResponse(res, gitResult, successMessage) {
+    if (gitResult.success) {
+        res.status(200).json({ message: successMessage, details: gitResult });
+    } else {
+        res.status(500).json({ message: 'Operacja Git nie powiodła się.', details: gitResult });
+    }
+}
 
 app.post('/api/data', async (req, res) => {
     try {
@@ -128,14 +133,10 @@ app.post('/api/data', async (req, res) => {
         const { presentPlayers, absentPlayers } = req.body;
         currentData.presentPlayers = presentPlayers;
         currentData.absentPlayers = absentPlayers;
-        await writeData(currentData, 'Aktualizacja list graczy');
-        res.status(200).json({ message: 'Dane graczy zostały pomyślnie zaktualizowane' });
+        const gitResult = await writeData(currentData, 'Aktualizacja list graczy');
+        sendGitResponse(res, gitResult, 'Dane graczy zaktualizowane.');
     } catch (error) {
-        // Złap błąd z `writeData` i odeślij go do przeglądarki!
-        res.status(500).json({
-            message: 'Błąd serwera podczas zapisu danych i operacji Git.',
-            gitError: error.message // Dołączamy treść błędu z gita
-        });
+        res.status(500).json({ message: 'Nieoczekiwany błąd serwera.', error: error.message });
     }
 });
 
@@ -147,69 +148,46 @@ app.post('/api/shoutbox', async (req, res) => {
         }
         const data = readData();
         const timestamp = new Date().toLocaleString('pl-PL');
-        const newMessage = { name, message, timestamp };
-        data.shoutboxMessages.unshift(newMessage);
-        if (data.shoutboxMessages.length > 50) {
-            data.shoutboxMessages.pop();
-        }
-        await writeData(data, `Nowa wiadomość w shoutboxie od ${name}`);
-        res.status(201).json({ message: 'Wiadomość została dodana.' });
+        data.shoutboxMessages.unshift({ name, message, timestamp });
+        if (data.shoutboxMessages.length > 50) data.shoutboxMessages.pop();
+
+        const gitResult = await writeData(data, `Nowa wiadomość w shoutboxie od ${name}`);
+        sendGitResponse(res, gitResult, 'Wiadomość została dodana.');
     } catch (error) {
-        res.status(500).json({
-            message: 'Błąd serwera podczas zapisu wiadomości i operacji Git.',
-            gitError: error.message
-        });
+        res.status(500).json({ message: 'Nieoczekiwany błąd serwera.', error: error.message });
     }
-});
-
-app.get('/historia', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'historia.html'));
-});
-
-app.get('/admin-panel-siatka', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 app.post('/api/archive', async (req, res) => {
     try {
-        const resultMessage = await archiveAndResetLists();
-        res.status(200).json({ message: resultMessage });
+        const { userMessage, gitResult } = await archiveAndResetLists();
+        sendGitResponse(res, gitResult, userMessage);
     } catch (error) {
-        console.error('Błąd podczas ręcznej archiwizacji:', error);
-        res.status(500).json({
-            message: 'Wystąpił błąd serwera podczas archiwizacji i operacji Git.',
-            gitError: error.message
-        });
+        res.status(500).json({ message: 'Nieoczekiwany błąd serwera podczas archiwizacji.', error: error.message });
     }
 });
 
-app.get('/sala.php', (req, res) => {
-    res.redirect(301, '/');
-});
 
-// Harmonogram również dostosowany do async
+app.get('/historia', (req, res) => res.sendFile(path.join(__dirname, 'public', 'historia.html')));
+app.get('/admin-panel-siatka', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.get('/sala.php', (req, res) => res.redirect(301, '/'));
+
 cron.schedule('0 2 * * 5', async () => {
     console.log('Uruchamiam zaplanowaną archiwizację...');
     try {
-        await archiveAndResetLists();
+        const { gitResult } = await archiveAndResetLists();
+        console.log('Wynik zaplanowanej archiwizacji:', gitResult);
     } catch(error) {
         console.error("Błąd podczas automatycznej, zaplanowanej archiwizacji:", error);
     }
 });
 
 // --- BLOK NASŁUCHIWANIA APLIKACJI ---
-
 if (process.env.NODE_ENV === 'production') {
     const socketPath = `/home/szpaku/tmp/siatkaSocket`;
-    if (fs.existsSync(socketPath)) {
-        fs.unlinkSync(socketPath);
-    }
-    app.listen(socketPath, () => {
-        console.log(`Serwer produkcyjny nasłuchuje na sockecie: ${socketPath}`);
-    });
+    if (fs.existsSync(socketPath)) fs.unlinkSync(socketPath);
+    app.listen(socketPath, () => console.log(`Serwer produkcyjny nasłuchuje na sockecie: ${socketPath}`));
 } else {
     const PORT = 3000;
-    app.listen(PORT, () => {
-        console.log(`Serwer deweloperski nasłuchuje na http://localhost:${PORT}`);
-    });
+    app.listen(PORT, () => console.log(`Serwer deweloperski nasłuchuje na http://localhost:${PORT}`));
 }
