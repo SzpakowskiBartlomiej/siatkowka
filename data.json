@@ -1,6 +1,6 @@
 {
   "presentPlayers": [
-    "26.02 nie ma sali"
+    "Bartek"
   ],
   "absentPlayers": [],
   "shoutboxMessages": [
@@ -101,6 +101,12 @@
     }
   ],
   "attendanceHistory": [
+    {
+      "date": "2026-06-04",
+      "players": [
+        "04.06 nie ma sali"
+      ]
+    },
     {
       "date": "2026-02-19",
       "players": [
