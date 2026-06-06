@@ -8,18 +8,19 @@ const cron = require('node-cron');
 const simpleGit = require('simple-git');
 
 const app = express();
+const dataPath = path.join(__dirname, 'data.json'); // Pełna ścieżka do data.json
 const git = simpleGit({
     baseDir: __dirname,
     binary: 'git',
     maxConcurrentProcesses: 6,
 });
-const dataPath = path.join(__dirname, 'data.json');
+
 
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- NOWA FUNKCJA GIT Z ROZBUDOWANYM LOGOWANIEM ---
+// --- FUNKCJA GIT Z POPRAWKĄ NA ABSOLUTNĄ ŚCIEŻKĘ ---
 async function commitAndPushDataJson(message) {
     const logs = [];
     const commitMessage = message || 'Automatyczny zapis zmian w data.json';
@@ -41,8 +42,9 @@ async function commitAndPushDataJson(message) {
         await git.addConfig('user.email', gitEmail, false, 'local');
         logs.push(`Tożsamość ustawiona na: ${gitUser} <${gitEmail}>`);
 
-        logs.push("Krok 3: Dodawanie pliku data.json do przechowalni (staging)...");
-        await git.add('data.json');
+        logs.push(`Krok 3: Dodawanie pliku do przechowalni używając pełnej ścieżki: ${dataPath}`);
+        // *** POPRAWKA: Używamy pełnej ścieżki do pliku zamiast nazwy relatywnej ***
+        await git.add(dataPath);
         logs.push("Plik dodany.");
 
         logs.push("Krok 4: Tworzenie commita...");
@@ -76,7 +78,6 @@ function readData() {
 
 async function writeData(data, commitMessage) {
     fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-    // Zwróć wynik operacji gita, aby endpoint mógł go odczytać
     return await commitAndPushDataJson(commitMessage);
 }
 
@@ -108,17 +109,15 @@ async function archiveAndResetLists() {
     const gitResult = await writeData(data, commitMessage);
 
     console.log(message);
-    // Zwracamy zarówno wiadomość dla użytkownika, jak i wynik operacji gita
     return { userMessage: message, gitResult };
 }
 
-// --- ENDPOINTY APLIKACJI Z ZASZYTYM ZWRACANIEM LOGÓW ---
+// --- ENDPOINTY APLIKACJI ---
 
 app.get('/api/data', (req, res) => {
     res.json(readData());
 });
 
-// Funkcja pomocnicza do wysyłania odpowiedzi
 function sendGitResponse(res, gitResult, successMessage) {
     if (gitResult.success) {
         res.status(200).json({ message: successMessage, details: gitResult });
