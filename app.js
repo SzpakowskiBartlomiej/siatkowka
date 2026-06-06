@@ -19,24 +19,44 @@ const dataPath = path.join(__dirname, 'data.json');
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Funkcja do commitowania zmian w data.json przy użyciu simple-git
-async function commitDataJson(message) {
+// --- NOWA, BARDZIEJ ROZBUDOWANA FUNKCJA GIT ---
+async function commitAndPushDataJson(message) {
     const commitMessage = message || 'Automatyczny zapis zmian w data.json';
     try {
-        // Sprawdzamy status, aby zobaczyć, czy plik data.json został zmodyfikowany
+        // KROK 1: Sprawdzamy, czy plik data.json faktycznie się zmienił
         const status = await git.status();
-        if (status.modified.includes('data.json')) {
-            console.log('Wykryto zmiany w data.json. Próba commitowania...');
-            await git.add('data.json');
-            const commitSummary = await git.commit(commitMessage);
-            console.log(`Pomyślnie zacommitowano zmiany w data.json:`, commitSummary);
-        } else {
+        if (!status.modified.includes('data.json')) {
             console.log('Brak zmian w data.json do zacommitowania.');
+            return; // Zakończ funkcję, jeśli nie ma zmian
         }
+
+        console.log('Wykryto zmiany w data.json. Próba commitu i pusha...');
+
+        // KROK 2: Konfiguracja tożsamości bota (kluczowe dla hostingów współdzielonych)
+        // Używamy zmiennych środowiskowych lub domyślnych wartości
+        const gitUser = process.env.GIT_USER || 'SiatkaBot';
+        const gitEmail = process.env.GIT_EMAIL || 'bot@siatka.local';
+        await git.addConfig('user.name', gitUser, false, 'local');
+        await git.addConfig('user.email', gitEmail, false, 'local');
+        console.log(`Ustawiono tożsamość gita na: ${gitUser} <${gitEmail}>`);
+
+        // KROK 3: Commit
+        await git.add('data.json');
+        const commitSummary = await git.commit(commitMessage);
+        console.log(`Pomyślnie zacommitowano zmiany:`, commitSummary);
+
+        // KROK 4: Push
+        // Ta operacja najprawdopodobniej się nie uda bez uwierzytelnienia!
+        // Spodziewamy się błędu, który zobaczymy w przeglądarce.
+        console.log('Próba wypchnięcia zmian na serwer zdalny (push)...');
+        await git.push('origin', 'main'); // Zakładam, że gałąź to "main"
+        console.log('Pomyślnie wypchnięto zmiany na serwer zdalny!');
+
     } catch (error) {
-        console.error('### BŁĄD PODCZAS COMMITOWANIA (simple-git) ###');
-        // Logujemy cały obiekt błędu, aby uzyskać jak najwięcej informacji
-        console.error(error);
+        console.error('### KRYTYCZNY BŁĄD PODCZAS OPERACJI GIT (commit/push) ###');
+        console.error(error); // To zobaczymy w logach serwera (jeśli działają)
+        // Rzucamy błąd dalej, aby endpoint API mógł go złapać i wysłać do przeglądarki
+        throw error;
     }
 }
 
@@ -52,15 +72,11 @@ function readData() {
     }
 }
 
-// Zmieniamy funkcję na asynchroniczną, aby poczekać na zakończenie commita
+// Zmieniamy funkcję na asynchroniczną, aby poczekać na zakończenie commita i pusha
 async function writeData(data, commitMessage) {
-    try {
-        fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-        // Czekamy na wykonanie operacji gita
-        await commitDataJson(commitMessage);
-    } catch (error) {
-        console.error('Błąd podczas zapisu do pliku data.json:', error);
-    }
+    // Usunęliśmy try-catch, aby błędy z git-a "leciały" wyżej do endpointu
+    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+    await commitAndPushDataJson(commitMessage);
 }
 
 // Funkcja z logiką archiwizacji, również asynchroniczna
@@ -89,14 +105,13 @@ async function archiveAndResetLists() {
 
     data.presentPlayers = [];
     data.absentPlayers = [];
-    // Czekamy na zapis i commit
-    await writeData(data, commitMessage);
+    await writeData(data, commitMessage); // Czekamy na zapis, commit i push
 
     console.log(message);
     return message;
 }
 
-// --- ENDPOINTY APLIKACJI ---
+// --- ENDPOINTY APLIKACJI (Z OBSŁUGĄ BŁĘDÓW WYSYŁANYCH DO PRZEGLĄDARKI) ---
 
 app.get('/api/data', (req, res) => {
     try {
@@ -107,7 +122,6 @@ app.get('/api/data', (req, res) => {
     }
 });
 
-// Endpointy modyfikujące dane również muszą być asynchroniczne
 app.post('/api/data', async (req, res) => {
     try {
         const currentData = readData();
@@ -117,7 +131,11 @@ app.post('/api/data', async (req, res) => {
         await writeData(currentData, 'Aktualizacja list graczy');
         res.status(200).json({ message: 'Dane graczy zostały pomyślnie zaktualizowane' });
     } catch (error) {
-        res.status(500).json({ message: 'Błąd serwera podczas zapisu danych graczy' });
+        // Złap błąd z `writeData` i odeślij go do przeglądarki!
+        res.status(500).json({
+            message: 'Błąd serwera podczas zapisu danych i operacji Git.',
+            gitError: error.message // Dołączamy treść błędu z gita
+        });
     }
 });
 
@@ -137,7 +155,10 @@ app.post('/api/shoutbox', async (req, res) => {
         await writeData(data, `Nowa wiadomość w shoutboxie od ${name}`);
         res.status(201).json({ message: 'Wiadomość została dodana.' });
     } catch (error) {
-        res.status(500).json({ message: 'Błąd serwera podczas zapisu wiadomości' });
+        res.status(500).json({
+            message: 'Błąd serwera podczas zapisu wiadomości i operacji Git.',
+            gitError: error.message
+        });
     }
 });
 
@@ -155,7 +176,10 @@ app.post('/api/archive', async (req, res) => {
         res.status(200).json({ message: resultMessage });
     } catch (error) {
         console.error('Błąd podczas ręcznej archiwizacji:', error);
-        res.status(500).json({ message: 'Wystąpił błąd serwera podczas archiwizacji.' });
+        res.status(500).json({
+            message: 'Wystąpił błąd serwera podczas archiwizacji i operacji Git.',
+            gitError: error.message
+        });
     }
 });
 
@@ -166,7 +190,11 @@ app.get('/sala.php', (req, res) => {
 // Harmonogram również dostosowany do async
 cron.schedule('0 2 * * 5', async () => {
     console.log('Uruchamiam zaplanowaną archiwizację...');
-    await archiveAndResetLists();
+    try {
+        await archiveAndResetLists();
+    } catch(error) {
+        console.error("Błąd podczas automatycznej, zaplanowanej archiwizacji:", error);
+    }
 });
 
 // --- BLOK NASŁUCHIWANIA APLIKACJI ---
