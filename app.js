@@ -5,87 +5,48 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const cron = require('node-cron');
-const simpleGit = require('simple-git');
 
 const app = express();
-const dataPath = path.join(__dirname, 'data.json'); // Pełna ścieżka do data.json
-const git = simpleGit({
-    baseDir: __dirname,
-    binary: 'git',
-    maxConcurrentProcesses: 6,
-});
-
+const dataPath = path.join(__dirname, 'data.json');
 
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- FUNKCJA GIT Z POPRAWKĄ NA ABSOLUTNĄ ŚCIEŻKĘ ---
-async function commitAndPushDataJson(message) {
-    const logs = [];
-    const commitMessage = message || 'Automatyczny zapis zmian w data.json';
+// --- UPROSZCZONE FUNKCJE ZAPISU I ODCZYTU ---
 
-    try {
-        logs.push("Krok 1: Sprawdzanie statusu repozytorium...");
-        const status = await git.status();
-        logs.push(`Status repozytorium: ${JSON.stringify(status)}`);
-
-        if (!status.modified.includes('data.json')) {
-            logs.push("Wniosek: Plik data.json nie został zmodyfikowany. Zakończono operację Git.");
-            return { success: true, summary: 'No changes detected', logs };
-        }
-
-        logs.push("Krok 2: Wykryto zmiany. Konfiguracja tożsamości bota...");
-        const gitUser = process.env.GIT_USER || 'SiatkaBot';
-        const gitEmail = process.env.GIT_EMAIL || 'bot@siatka.local';
-        await git.addConfig('user.name', gitUser, false, 'local');
-        await git.addConfig('user.email', gitEmail, false, 'local');
-        logs.push(`Tożsamość ustawiona na: ${gitUser} <${gitEmail}>`);
-
-        logs.push(`Krok 3: Dodawanie pliku do przechowalni używając pełnej ścieżki: ${dataPath}`);
-        // *** POPRAWKA: Używamy pełnej ścieżki do pliku zamiast nazwy relatywnej ***
-        await git.add(dataPath);
-        logs.push("Plik dodany.");
-
-        logs.push("Krok 4: Tworzenie commita...");
-        const commitSummary = await git.commit(commitMessage);
-        logs.push(`Commit utworzony pomyślnie: ${commitSummary.commit}`);
-
-        logs.push("Krok 5: Wypychanie zmian na serwer zdalny (push)...");
-        await git.push('origin', 'main');
-        logs.push("Zmiany zostały pomyślnie wypchnięte!");
-
-        return { success: true, summary: commitSummary, logs };
-
-    } catch (error) {
-        logs.push(`### KRYTYCZNY BŁĄD PODCZAS OPERACJI GIT: ${error.message} ###`);
-        console.error("Błąd operacji Git:", error);
-        return { success: false, error: error.message, logs };
-    }
-}
-
-
-// Funkcje do odczytu i zapisu danych
+// Funkcja do odczytu danych z pliku
 function readData() {
     try {
+        // Używamy flagi 'a+' do utworzenia pliku, jeśli nie istnieje
+        if (!fs.existsSync(dataPath)) {
+            fs.writeFileSync(dataPath, JSON.stringify({ presentPlayers: [], absentPlayers: [], shoutboxMessages: [], attendanceHistory: [] }, null, 2));
+        }
         const data = fs.readFileSync(dataPath, 'utf8');
         return JSON.parse(data);
     } catch (error) {
         console.error('Błąd podczas odczytu pliku data.json:', error);
+        // Zwróć pustą strukturę w razie błędu parsowania
         return { presentPlayers: [], absentPlayers: [], shoutboxMessages: [], attendanceHistory: [] };
     }
 }
 
-async function writeData(data, commitMessage) {
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-    return await commitAndPushDataJson(commitMessage);
+// Funkcja do zapisu danych do pliku (bez gita)
+function writeData(data) {
+    try {
+        fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+    } catch (error) {
+        console.error('Błąd podczas zapisu do pliku data.json:', error);
+    }
 }
 
-async function archiveAndResetLists() {
+// --- LOGIKA APLIKACJI ---
+
+// Funkcja archiwizacji (bez gita)
+function archiveAndResetLists() {
     console.log('Uruchamiam proces archiwizacji listy obecności...');
     const data = readData();
     let message = 'Nie było zapisanych graczy. Listy zostały wyczyszczone.';
-    let commitMessage = 'Archiwizacja: Brak graczy, listy wyczyszczone.';
 
     if (data.presentPlayers && data.presentPlayers.length > 0) {
         const gameDate = new Date();
@@ -101,45 +62,36 @@ async function archiveAndResetLists() {
 
         data.attendanceHistory.unshift(newHistoryEntry);
         message = `Pomyślnie zarchiwizowano listę obecności z dnia: ${dateString}. Zapisano ${newHistoryEntry.players.length} graczy.`;
-        commitMessage = `Archiwizacja: Zapisano ${newHistoryEntry.players.length} graczy z dnia ${dateString}.`;
     }
 
     data.presentPlayers = [];
     data.absentPlayers = [];
-    const gitResult = await writeData(data, commitMessage);
+    writeData(data); // Prosty zapis do pliku
 
     console.log(message);
-    return { userMessage: message, gitResult };
+    return message;
 }
 
-// --- ENDPOINTY APLIKACJI ---
+// --- ENDPOINTY APLIKACJI (UPROSZCZONE) ---
 
 app.get('/api/data', (req, res) => {
     res.json(readData());
 });
 
-function sendGitResponse(res, gitResult, successMessage) {
-    if (gitResult.success) {
-        res.status(200).json({ message: successMessage, details: gitResult });
-    } else {
-        res.status(500).json({ message: 'Operacja Git nie powiodła się.', details: gitResult });
-    }
-}
-
-app.post('/api/data', async (req, res) => {
+app.post('/api/data', (req, res) => {
     try {
         const currentData = readData();
         const { presentPlayers, absentPlayers } = req.body;
         currentData.presentPlayers = presentPlayers;
         currentData.absentPlayers = absentPlayers;
-        const gitResult = await writeData(currentData, 'Aktualizacja list graczy');
-        sendGitResponse(res, gitResult, 'Dane graczy zaktualizowane.');
+        writeData(currentData); // Prosty zapis
+        res.status(200).json({ message: 'Dane graczy zostały pomyślnie zaktualizowane' });
     } catch (error) {
-        res.status(500).json({ message: 'Nieoczekiwany błąd serwera.', error: error.message });
+        res.status(500).json({ message: 'Błąd serwera podczas zapisu danych graczy' });
     }
 });
 
-app.post('/api/shoutbox', async (req, res) => {
+app.post('/api/shoutbox', (req, res) => {
     try {
         const { name, message } = req.body;
         if (!name || !message) {
@@ -148,43 +100,43 @@ app.post('/api/shoutbox', async (req, res) => {
         const data = readData();
         const timestamp = new Date().toLocaleString('pl-PL');
         data.shoutboxMessages.unshift({ name, message, timestamp });
-        if (data.shoutboxMessages.length > 50) data.shoutboxMessages.pop();
-
-        const gitResult = await writeData(data, `Nowa wiadomość w shoutboxie od ${name}`);
-        sendGitResponse(res, gitResult, 'Wiadomość została dodana.');
+        if (data.shoutboxMessages.length > 50) {
+            data.shoutboxMessages.pop();
+        }
+        writeData(data); // Prosty zapis
+        res.status(201).json({ message: 'Wiadomość została dodana.' });
     } catch (error) {
-        res.status(500).json({ message: 'Nieoczekiwany błąd serwera.', error: error.message });
+        res.status(500).json({ message: 'Błąd serwera podczas zapisu wiadomości' });
     }
 });
 
-app.post('/api/archive', async (req, res) => {
+app.post('/api/archive', (req, res) => {
     try {
-        const { userMessage, gitResult } = await archiveAndResetLists();
-        sendGitResponse(res, gitResult, userMessage);
+        const resultMessage = archiveAndResetLists();
+        res.status(200).json({ message: resultMessage });
     } catch (error) {
-        res.status(500).json({ message: 'Nieoczekiwany błąd serwera podczas archiwizacji.', error: error.message });
+        console.error('Błąd podczas ręcznej archiwizacji:', error);
+        res.status(500).json({ message: 'Wystąpił błąd serwera podczas archiwizacji.' });
     }
 });
 
+// --- ŚCIEŻKI I HARMONOGRAM ---
 
 app.get('/historia', (req, res) => res.sendFile(path.join(__dirname, 'public', 'historia.html')));
 app.get('/admin-panel-siatka', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/sala.php', (req, res) => res.redirect(301, '/'));
 
-cron.schedule('0 2 * * 5', async () => {
+cron.schedule('0 2 * * 5', () => {
     console.log('Uruchamiam zaplanowaną archiwizację...');
-    try {
-        const { gitResult } = await archiveAndResetLists();
-        console.log('Wynik zaplanowanej archiwizacji:', gitResult);
-    } catch(error) {
-        console.error("Błąd podczas automatycznej, zaplanowanej archiwizacji:", error);
-    }
+    archiveAndResetLists();
 });
 
 // --- BLOK NASŁUCHIWANIA APLIKACJI ---
 if (process.env.NODE_ENV === 'production') {
     const socketPath = `/home/szpaku/tmp/siatkaSocket`;
-    if (fs.existsSync(socketPath)) fs.unlinkSync(socketPath);
+    if (fs.existsSync(socketPath)) {
+        fs.unlinkSync(socketPath);
+    }
     app.listen(socketPath, () => console.log(`Serwer produkcyjny nasłuchuje na sockecie: ${socketPath}`));
 } else {
     const PORT = 3000;

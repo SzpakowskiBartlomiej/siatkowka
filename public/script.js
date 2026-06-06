@@ -72,8 +72,6 @@ async function fetchData() {
     }
 }
 
-// --- ZMODYFIKOWANE FUNKCJE ZAPISU Z LOGOWANIEM ODPOWIEDZI ---
-
 // Funkcja do zapisywania DANYCH GRACZY na serwerze
 async function savePlayerData(dataToSave) {
     try {
@@ -82,16 +80,13 @@ async function savePlayerData(dataToSave) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ presentPlayers: dataToSave.presentPlayers, absentPlayers: dataToSave.absentPlayers }),
         });
-        const result = await response.json(); // Zawsze odczytujemy odpowiedź JSON
-        console.log('Odpowiedź serwera (savePlayerData):', result); // Logujemy ją w konsoli
-
         if (!response.ok) {
-            // Jeśli status to błąd (np. 500), rzucamy błąd, aby wyświetlić alert
-            throw new Error(result.message || 'Nie udało się zapisać danych na serwerze.');
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Nie udało się zapisać danych na serwerze.');
         }
     } catch (error) {
         console.error('Błąd zapisu danych:', error);
-        alert(error.message); // Wyświetlamy błąd użytkownikowi
+        alert(error.message);
     }
 }
 
@@ -103,11 +98,9 @@ async function saveShoutboxMessage(name, message) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, message })
         });
-        const result = await response.json();
-        console.log('Odpowiedź serwera (saveShoutboxMessage):', result);
-
         if (!response.ok) {
-            throw new Error(result.message || 'Błąd serwera przy dodawaniu wiadomości.');
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Błąd serwera przy dodawaniu wiadomości.');
         }
     } catch (error) {
         console.error('Błąd wysyłania wiadomości:', error);
@@ -146,7 +139,6 @@ function renderShoutbox(messages) {
 
 // Renderuje cały interfejs użytkownika
 function renderUI() {
-    // ... reszta funkcji renderUI bez zmian ...
     playerTableBody.innerHTML = '';
     absentTableBody.innerHTML = '';
     allData.presentPlayers.forEach((player, index) => {
@@ -171,7 +163,7 @@ function renderUI() {
     renderShoutbox(allData.shoutboxMessages);
 }
 
-// --- ZMODYFIKOWANE EVENT LISTENERY ---
+// --- EVENT LISTENERY ---
 addPlayerForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const newName = playerNameInput.value.trim();
@@ -181,8 +173,8 @@ addPlayerForm.addEventListener('submit', async (event) => {
     }
     allData.absentPlayers = allData.absentPlayers.filter(p => p.toLowerCase() !== newName.toLowerCase());
     allData.presentPlayers.push(newName);
-    await savePlayerData(allData); // Zapisz dane i zaloguj odpowiedź
-    await fetchData(); // Odśwież UI
+    await savePlayerData(allData);
+    await fetchData();
     playerNameInput.value = '';
 });
 
@@ -223,7 +215,7 @@ shoutboxForm.addEventListener('submit', async (event) => {
     const message = shoutboxMessageInput.value.trim();
     if (!name || !message) return;
 
-    await saveShoutboxMessage(name, message); // Zapisz wiadomość i zaloguj odpowiedź
+    await saveShoutboxMessage(name, message);
     shoutboxCurrentPage = 1;
     await fetchData();
     shoutboxMessageInput.value = '';
