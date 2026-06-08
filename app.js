@@ -73,6 +73,37 @@ function archiveAndResetLists() {
     return message;
 }
 
+// --- FUNKCJA WYSYŁKI MAILA ---
+async function sendEmailWithBackup(backupPath, dateString) {
+    if (!process.env.SMTP_HOST || !process.env.SMTP_PASS) {
+        throw new Error('Brak skonfigurowanego SMTP w pliku .env (brakuje SMTP_PASS lub SMTP_HOST).');
+    }
+    const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        secure: true,
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
+        }
+    });
+    
+    const mailOptions = {
+        from: `"Siatkówka Backup" <${process.env.SMTP_USER}>`,
+        to: process.env.EMAIL_TO || process.env.SMTP_USER,
+        subject: `Kopia zapasowa danych Siatkówka - ${dateString}`,
+        text: `W załączniku znajduje się kopia zapasowa danych z aplikacji Siatkówka (wygenerowana: ${dateString}).`,
+        attachments: [
+            {
+                filename: `data_backup_${dateString}.json`,
+                path: backupPath
+            }
+        ]
+    };
+    
+    await transporter.sendMail(mailOptions);
+}
+
 // --- ENDPOINTY APLIKACJI (UPROSZCZONE) ---
 
 app.get('/api/data', (req, res) => {
@@ -131,6 +162,23 @@ app.get('/api/backup', (req, res) => {
     }
 });
 
+app.post('/api/backup/email', async (req, res) => {
+    try {
+        const dateString = new Date().toISOString().split('T')[0] + "_manual";
+        const backupsDir = path.join(__dirname, 'backups');
+        const backupPath = path.join(backupsDir, `data_backup_${dateString}.json`);
+        
+        if (!fs.existsSync(backupsDir)) fs.mkdirSync(backupsDir);
+        fs.copyFileSync(dataPath, backupPath);
+        
+        await sendEmailWithBackup(backupPath, dateString);
+        res.status(200).json({ message: 'Kopia zapasowa została wysłana na Twój adres e-mail.' });
+    } catch (error) {
+        console.error('Błąd podczas ręcznej wysyłki maila:', error);
+        res.status(500).json({ message: 'Błąd wysyłki: ' + error.message });
+    }
+});
+
 // --- ŚCIEŻKI I HARMONOGRAM ---
 
 app.get('/historia', (req, res) => res.sendFile(path.join(__dirname, 'public', 'historia.html')));
@@ -158,34 +206,11 @@ cron.schedule('0 3 1 * *', async () => {
             fs.copyFileSync(dataPath, backupPath);
             console.log(`Pomyślnie utworzono kopię zapasową: ${backupPath}`);
             
-            if (process.env.SMTP_HOST && process.env.SMTP_PASS) {
-                const transporter = nodemailer.createTransport({
-                    host: process.env.SMTP_HOST,
-                    port: process.env.SMTP_PORT,
-                    secure: true,
-                    auth: {
-                        user: process.env.SMTP_USER,
-                        pass: process.env.SMTP_PASS
-                    }
-                });
-                
-                const mailOptions = {
-                    from: `"Siatkówka Backup" <${process.env.SMTP_USER}>`,
-                    to: process.env.EMAIL_TO || process.env.SMTP_USER,
-                    subject: `Kopia zapasowa danych Siatkówka - ${dateString}`,
-                    text: `W załączniku znajduje się comiesięczna kopia zapasowa danych z aplikacji Siatkówka.`,
-                    attachments: [
-                        {
-                            filename: `data_backup_${dateString}.json`,
-                            path: backupPath
-                        }
-                    ]
-                };
-                
-                await transporter.sendMail(mailOptions);
+            try {
+                await sendEmailWithBackup(backupPath, dateString);
                 console.log('Kopia zapasowa została wysłana na email.');
-            } else {
-                console.log('Nie wysłano maila: brak w pełni skonfigurowanego SMTP w .env');
+            } catch (err) {
+                console.log('Nie wysłano maila:', err.message);
             }
         }
     } catch (error) {
