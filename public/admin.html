@@ -27,6 +27,18 @@
         .btn-danger:hover {
             background-color: #c82333;
         }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
@@ -41,6 +53,12 @@
             <p>Poniższy przycisk ręcznie uruchamia archiwizację obecnej listy obecności (dodaje do historii) i czyści listy zapisanych oraz nieobecnych graczy.</p>
             <button id="archive-btn" class="btn-danger">Archiwizuj i Resetuj Listy</button>
             <p id="status-message" style="margin-top: 20px; font-weight: bold;"></p>
+        </section>
+
+        <section class="admin-section">
+            <h2>Kopia zapasowa danych</h2>
+            <p>Pobierz plik ze wszystkimi zapisanymi informacjami (obecności, shoutbox, historia) na dysk swojego urządzenia.</p>
+            <a href="/api/backup" class="btn-success" style="display: inline-block; text-decoration: none;" download>Pobierz data.json</a>
         </section>
     </main>
 

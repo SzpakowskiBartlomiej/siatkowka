@@ -5,6 +5,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const cron = require('node-cron');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const dataPath = path.join(__dirname, 'data.json');
@@ -120,6 +121,16 @@ app.post('/api/archive', (req, res) => {
     }
 });
 
+app.get('/api/backup', (req, res) => {
+    try {
+        const dateString = new Date().toISOString().split('T')[0];
+        res.download(dataPath, `data_backup_${dateString}.json`);
+    } catch (error) {
+        console.error('Błąd podczas pobierania kopii zapasowej:', error);
+        res.status(500).json({ message: 'Wystąpił błąd serwera podczas pobierania pliku.' });
+    }
+});
+
 // --- ŚCIEŻKI I HARMONOGRAM ---
 
 app.get('/historia', (req, res) => res.sendFile(path.join(__dirname, 'public', 'historia.html')));
@@ -129,6 +140,57 @@ app.get('/sala.php', (req, res) => res.redirect(301, '/'));
 cron.schedule('0 2 * * 5', () => {
     console.log('Uruchamiam zaplanowaną archiwizację...');
     archiveAndResetLists();
+});
+
+// Automatyczna kopia zapasowa raz w miesiącu (1. dnia miesiąca o 3:00)
+cron.schedule('0 3 1 * *', async () => {
+    console.log('Uruchamiam comiesięczną kopię zapasową...');
+    try {
+        const dateString = new Date().toISOString().split('T')[0];
+        const backupsDir = path.join(__dirname, 'backups');
+        const backupPath = path.join(backupsDir, `data_backup_${dateString}.json`);
+        
+        if (!fs.existsSync(backupsDir)) {
+            fs.mkdirSync(backupsDir);
+        }
+        
+        if (fs.existsSync(dataPath)) {
+            fs.copyFileSync(dataPath, backupPath);
+            console.log(`Pomyślnie utworzono kopię zapasową: ${backupPath}`);
+            
+            if (process.env.SMTP_HOST && process.env.SMTP_PASS) {
+                const transporter = nodemailer.createTransport({
+                    host: process.env.SMTP_HOST,
+                    port: process.env.SMTP_PORT,
+                    secure: true,
+                    auth: {
+                        user: process.env.SMTP_USER,
+                        pass: process.env.SMTP_PASS
+                    }
+                });
+                
+                const mailOptions = {
+                    from: `"Siatkówka Backup" <${process.env.SMTP_USER}>`,
+                    to: process.env.EMAIL_TO || process.env.SMTP_USER,
+                    subject: `Kopia zapasowa danych Siatkówka - ${dateString}`,
+                    text: `W załączniku znajduje się comiesięczna kopia zapasowa danych z aplikacji Siatkówka.`,
+                    attachments: [
+                        {
+                            filename: `data_backup_${dateString}.json`,
+                            path: backupPath
+                        }
+                    ]
+                };
+                
+                await transporter.sendMail(mailOptions);
+                console.log('Kopia zapasowa została wysłana na email.');
+            } else {
+                console.log('Nie wysłano maila: brak w pełni skonfigurowanego SMTP w .env');
+            }
+        }
+    } catch (error) {
+        console.error('Błąd podczas tworzenia/wysyłania automatycznej kopii zapasowej:', error);
+    }
 });
 
 // --- BLOK NASŁUCHIWANIA APLIKACJI ---
