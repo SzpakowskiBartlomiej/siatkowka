@@ -18,26 +18,34 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Funkcja do odczytu danych z pliku
 function readData() {
+    if (!fs.existsSync(dataPath)) {
+        const defaultData = { presentPlayers: [], absentPlayers: [], shoutboxMessages: [], attendanceHistory: [] };
+        fs.writeFileSync(dataPath, JSON.stringify(defaultData, null, 2));
+        return defaultData;
+    }
+    const data = fs.readFileSync(dataPath, 'utf8');
+    if (!data.trim()) {
+        throw new Error('Plik data.json jest pusty');
+    }
     try {
-        // Używamy flagi 'a+' do utworzenia pliku, jeśli nie istnieje
-        if (!fs.existsSync(dataPath)) {
-            fs.writeFileSync(dataPath, JSON.stringify({ presentPlayers: [], absentPlayers: [], shoutboxMessages: [], attendanceHistory: [] }, null, 2));
-        }
-        const data = fs.readFileSync(dataPath, 'utf8');
         return JSON.parse(data);
     } catch (error) {
         console.error('Błąd podczas odczytu pliku data.json:', error);
-        // Zwróć pustą strukturę w razie błędu parsowania
-        return { presentPlayers: [], absentPlayers: [], shoutboxMessages: [], attendanceHistory: [] };
+        // Zgłaszamy błąd, aby nie nadpisać uszkodzonego pliku pustą strukturą
+        throw new Error('Błąd parsowania pliku data.json - plik może być uszkodzony.');
     }
 }
 
 // Funkcja do zapisu danych do pliku (bez gita)
 function writeData(data) {
     try {
-        fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+        const tempPath = dataPath + '.tmp';
+        // Zapis do pliku tymczasowego, a następnie zmiana nazwy (operacja atomowa)
+        fs.writeFileSync(tempPath, JSON.stringify(data, null, 2));
+        fs.renameSync(tempPath, dataPath);
     } catch (error) {
         console.error('Błąd podczas zapisu do pliku data.json:', error);
+        throw error;
     }
 }
 
@@ -46,7 +54,14 @@ function writeData(data) {
 // Funkcja archiwizacji (bez gita)
 function archiveAndResetLists() {
     console.log('Uruchamiam proces archiwizacji listy obecności...');
-    const data = readData();
+    let data;
+    try {
+        data = readData();
+    } catch (error) {
+        console.error('Archiwizacja przerwana:', error.message);
+        return 'Archiwizacja przerwana: ' + error.message;
+    }
+
     let message = 'Nie było zapisanych graczy. Listy zostały wyczyszczone.';
 
     if (data.presentPlayers && data.presentPlayers.length > 0) {
@@ -107,7 +122,11 @@ async function sendEmailWithBackup(backupPath, dateString) {
 // --- ENDPOINTY APLIKACJI (UPROSZCZONE) ---
 
 app.get('/api/data', (req, res) => {
-    res.json(readData());
+    try {
+        res.json(readData());
+    } catch (error) {
+        res.status(500).json({ message: 'Błąd podczas odczytu danych', error: error.message });
+    }
 });
 
 app.post('/api/data', (req, res) => {
