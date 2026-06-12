@@ -1,7 +1,5 @@
 {
-  "presentPlayers": [
-    "Bartek"
-  ],
+  "presentPlayers": [],
   "absentPlayers": [],
   "shoutboxMessages": [
     {
@@ -101,6 +99,21 @@
     }
   ],
   "attendanceHistory": [
+    {
+      "date": "2026-06-11",
+      "players": [
+        "Bartek",
+        "Michał",
+        "Jac",
+        "Ania",
+        "Zuza",
+        "Natalia",
+        "Agata K",
+        "Marek",
+        "Michał 2",
+        "Wiktor"
+      ]
+    },
     {
       "date": "2026-06-04",
       "players": [
