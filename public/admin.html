@@ -72,7 +72,7 @@
             <h2>Kopia zapasowa danych</h2>
             <p>Pobierz plik ze wszystkimi zapisanymi informacjami lub wyślij go na skonfigurowany adres e-mail.</p>
             <div style="margin-top: 15px;">
-                <a href="/api/backup" class="btn-success" style="display: inline-block; text-decoration: none;" download>Pobierz data.json</a>
+                <a href="/api/export" class="btn-success" style="display: inline-block; text-decoration: none;" download>Pobierz data.json</a>
                 <button id="email-btn" class="btn-primary">Wyślij na E-mail</button>
             </div>
             <p id="email-status-message" style="margin-top: 20px; font-weight: bold;"></p>
@@ -117,7 +117,7 @@
             emailStatusMsg.style.color = 'blue';
 
             try {
-                const response = await fetch('/api/backup/email', { method: 'POST' });
+                const response = await fetch('/api/export/email', { method: 'POST' });
                 const data = await response.json();
 
                 if (response.ok) {

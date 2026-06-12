@@ -171,7 +171,7 @@ app.post('/api/archive', (req, res) => {
     }
 });
 
-app.get('/api/backup', (req, res) => {
+app.get('/api/export', (req, res) => {
     try {
         const dateString = new Date().toISOString().split('T')[0];
         res.download(dataPath, `data_backup_${dateString}.json`);
@@ -181,7 +181,7 @@ app.get('/api/backup', (req, res) => {
     }
 });
 
-app.post('/api/backup/email', async (req, res) => {
+app.post('/api/export/email', async (req, res) => {
     try {
         const dateString = new Date().toISOString().split('T')[0] + "_manual";
         const backupsDir = path.join(__dirname, 'backups');
