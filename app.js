@@ -238,13 +238,7 @@ cron.schedule('0 3 1 * *', async () => {
 });
 
 // --- BLOK NASŁUCHIWANIA APLIKACJI ---
-if (process.env.NODE_ENV === 'production') {
-    const socketPath = `/home/szpaku/tmp/siatkaSocket`;
-    if (fs.existsSync(socketPath)) {
-        fs.unlinkSync(socketPath);
-    }
-    app.listen(socketPath, () => console.log(`Serwer produkcyjny nasłuchuje na sockecie: ${socketPath}`));
-} else {
-    const PORT = 3000;
-    app.listen(PORT, () => console.log(`Serwer deweloperski nasłuchuje na http://localhost:${PORT}`));
-}
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Serwer nasłuchuje na porcie: ${PORT}`);
+});
