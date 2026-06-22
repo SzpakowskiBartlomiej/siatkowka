@@ -201,3 +201,185 @@ footer {
         gap: 10px;
     }
 }
+
+/* --- STYLE WAKACYJNE (MODAL & BANER) --- */
+
+/* Baner u góry strony */
+.summer-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+    color: #333;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 6px solid #ff4e50;
+    box-shadow: 0 4px 15px rgba(255, 154, 158, 0.2);
+    font-size: 1.05em;
+    animation: slideDown 0.5s ease-out;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.summer-banner .banner-icon {
+    font-size: 1.5em;
+    animation: spinSlow 8s linear infinite;
+}
+
+/* Modal / Popup */
+.modal {
+    display: none; /* Domyślnie ukryty */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.modal-content {
+    background: #ffffff;
+    margin: auto;
+    padding: 30px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    position: relative;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(to bottom, #ffffff, #fffdfa);
+    animation: scaleUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-sizing: border-box;
+}
+
+.close-modal {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+    color: #ff4e50;
+    text-decoration: none;
+}
+
+.modal-header h2 {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-size: 1.8em;
+    background: linear-gradient(45deg, #ff4e50, #f9d423);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+}
+
+.summer-icon {
+    font-size: 3.5em;
+    margin-bottom: 10px;
+    display: inline-block;
+    animation: float 3s ease-in-out infinite;
+}
+
+.modal-body {
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #4a4a4a;
+}
+
+.modal-body p {
+    margin: 15px 0;
+}
+
+.modal-body .return-info {
+    background-color: #fff9e6;
+    border: 1px dashed #f9d423;
+    padding: 12px 15px;
+    border-radius: 8px;
+    color: #b7791f;
+}
+
+.modal-footer {
+    margin-top: 25px;
+}
+
+#close-modal-btn {
+    background: linear-gradient(135deg, #ff4e50 0%, #f9d423 100%);
+    color: white;
+    font-size: 1.05em;
+    font-weight: bold;
+    padding: 12px 30px;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 78, 80, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#close-modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 78, 80, 0.6);
+}
+
+#close-modal-btn:active {
+    transform: translateY(0);
+}
+
+/* Karta zablokowanych zapisów */
+.registration-disabled-card {
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    box-sizing: border-box;
+}
+
+.registration-disabled-card h4 {
+    margin-top: 0;
+    color: #e53e3e;
+    font-size: 1.2em;
+}
+
+/* Animacje */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes spinSlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

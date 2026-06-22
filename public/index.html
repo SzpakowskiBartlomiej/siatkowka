@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,84 +8,121 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="/favicon.png">
 </head>
+
 <body>
 
-<header>
-    <h1>Zapisy na siatkówkę</h1>
-    <p>Szkoła Podstawowa nr 13 w Siemianowicach Śląskich - Michałkowicach, ul. Barlickiego 2</p>
-    <p>Gramy w każdy czwartek w godzinach 19:30 - 21:40</p>
-    <p>Płatność 12 zł do Jacka gotówką lub blikiem na numer 501 412 701</p>
-</header>
+    <header>
+        <h1>Zapisy na siatkówkę</h1>
+        <p>Szkoła Podstawowa nr 13 w Siemianowicach Śląskich - Michałkowicach, ul. Barlickiego 2</p>
+        <p>Gramy w każdy czwartek w godzinach 19:30 - 21:40</p>
+        <p>Płatność 12 zł do Jacka gotówką lub blikiem na numer 501 412 701</p>
+    </header>
 
-<main>
-    <section class="player-list-section">
-        <h2 id="player-count">Zapisani gracze: 0</h2>
-        <p>Zapisy trwają do czwartku do godz. 16:00. Jeśli zbierze się 8 lub więcej osób, mecz się odbędzie.</p>
-        <h3 id="match-status"></h3>
-        <table>
-            <thead>
-            <tr>
-                <th>Lp.</th>
-                <th>Imię/Pseudonim</th>
-            </tr>
-            </thead>
-            <tbody id="player-table-body">
-            </tbody>
-        </table>
-    </section>
-
-    <section class="absent-list-section">
-        <h3>Nieobecni gracze</h3>
-        <table>
-            <thead>
-            <tr>
-                <th>Imię/Pseudonim</th>
-            </tr>
-            </thead>
-            <tbody id="absent-table-body">
-            </tbody>
-        </table>
-    </section>
-
-    <section class="registration-form-section">
-        <h3>Zapisz się na mecz</h3>
-        <form id="player-form">
-            <input type="text" id="player-name-input" placeholder="Wpisz swoje imię" required>
-            <button type="submit" id="add-player-btn">Zapisz się</button>
-        </form>
-
-        <h3>Dodaj do listy nieobecnych</h3>
-        <form id="add-absent-form">
-            <input type="text" id="absent-name-input" placeholder="Wpisz swoje imię" required>
-            <button type="submit" id="add-absent-btn">Nie przyjdę</button>
-        </form>
-
-        <h3>Wypisz się z obu list</h3>
-        <form id="remove-player-form">
-            <input type="text" id="player-name-remove-input" placeholder="Wpisz imię do usunięcia" required>
-            <button type="submit" id="remove-player-btn">Wypisz się</button>
-        </form>
-    </section>
-
-    <p style="text-align: center; font-size: 1.1em;"><a href="/historia">Zobacz historię obecności</a></p>
-
-    <section class="shoutbox-section">
-        <h3>Shoutbox</h3>
-        <form id="shoutbox-form">
-            <input type="text" id="shoutbox-name-input" placeholder="Imię" required>
-            <input type="text" id="shoutbox-message-input" placeholder="Wpisz wiadomość..." required>
-            <button type="submit" id="add-shoutbox-btn">Wyślij</button>
-        </form>
-        <div id="shoutbox-messages">
+    <main>
+        <!-- Baner wakacyjny (domyślnie ukryty) -->
+        <div id="summer-banner" class="summer-banner" style="display: none;">
+            <span class="banner-icon">☀️</span>
+            <span>Trwa przerwa wakacyjna. Kolejny mecz odbędzie się w czwartek, <strong>3 września 2026
+                    r.</strong></span>
         </div>
-        <div id="shoutbox-pagination" class="pagination-container"></div>
-    </section>
-</main>
 
-<footer>
-    <p>&copy; 2026  Strona do zapisów</p>
-</footer>
+        <section class="player-list-section">
+            <h2 id="player-count">Zapisani gracze: 0</h2>
+            <p id="registration-info-text">Zapisy trwają do czwartku do godz. 16:00. Jeśli zbierze się 8 lub więcej
+                osób, mecz się odbędzie.</p>
+            <h3 id="match-status"></h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Lp.</th>
+                        <th>Imię/Pseudonim</th>
+                    </tr>
+                </thead>
+                <tbody id="player-table-body">
+                </tbody>
+            </table>
+        </section>
 
-<script src="script.js"></script>
+        <section class="absent-list-section">
+            <h3>Nieobecni gracze</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Imię/Pseudonim</th>
+                    </tr>
+                </thead>
+                <tbody id="absent-table-body">
+                </tbody>
+            </table>
+        </section>
+
+        <section class="registration-form-section">
+            <div id="registration-forms-container">
+                <h3>Zapisz się na mecz</h3>
+                <form id="player-form">
+                    <input type="text" id="player-name-input" placeholder="Wpisz swoje imię" required>
+                    <button type="submit" id="add-player-btn">Zapisz się</button>
+                </form>
+
+                <h3>Dodaj do listy nieobecnych</h3>
+                <form id="add-absent-form">
+                    <input type="text" id="absent-name-input" placeholder="Wpisz swoje imię" required>
+                    <button type="submit" id="add-absent-btn">Nie przyjdę</button>
+                </form>
+
+                <h3>Wypisz się z obu list</h3>
+                <form id="remove-player-form">
+                    <input type="text" id="player-name-remove-input" placeholder="Wpisz imię do usunięcia" required>
+                    <button type="submit" id="remove-player-btn">Wypisz się</button>
+                </form>
+            </div>
+            <div id="registration-disabled-message" class="registration-disabled-card" style="display: none;">
+                <h4>☀️ Zapisy wstrzymane na czas wakacji</h4>
+                <p>Rejestracja obecności została wyłączona na czas przerw letnich.</p>
+                <p>Do zobaczenia na pierwszym powakacyjnym meczu w czwartek, <strong>3 września 2026 r.</strong>!</p>
+            </div>
+        </section>
+
+        <p style="text-align: center; font-size: 1.1em;"><a href="/historia">Zobacz historię obecności</a></p>
+
+        <section class="shoutbox-section">
+            <h3>Shoutbox</h3>
+            <form id="shoutbox-form">
+                <input type="text" id="shoutbox-name-input" placeholder="Imię" required>
+                <input type="text" id="shoutbox-message-input" placeholder="Wpisz wiadomość..." required>
+                <button type="submit" id="add-shoutbox-btn">Wyślij</button>
+            </form>
+            <div id="shoutbox-messages">
+            </div>
+            <div id="shoutbox-pagination" class="pagination-container"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Strona do zapisów</p>
+    </footer>
+
+    <!-- Popup wakacyjny -->
+    <div id="summer-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header">
+                <div class="summer-icon">☀️🏐🌴</div>
+                <h2>Przerwa Wakacyjna!</h2>
+            </div>
+            <div class="modal-body">
+                <p>Sezon siatkarski dobiegł końca.</p>
+                <p class="return-info">Wracamy do gry w pierwszy czwartek września:<br><strong>3 września 2026
+                        r.</strong></p>
+                <p>Życzymy wszystkim udanego wypoczynku! 🏖️</p>
+            </div>
+            <div class="modal-footer">
+                <button id="close-modal-btn">Zamknij</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
+
 </html>

@@ -139,6 +139,7 @@ function renderShoutbox(messages) {
 
 // Renderuje cały interfejs użytkownika
 function renderUI() {
+    updateMatchDateTitle();
     playerTableBody.innerHTML = '';
     absentTableBody.innerHTML = '';
     allData.presentPlayers.forEach((player, index) => {
@@ -153,13 +154,43 @@ function renderUI() {
         absentTableBody.appendChild(row);
     });
     playerCountElement.textContent = `Zapisani gracze: ${allData.presentPlayers.length}`;
-    if (allData.presentPlayers.length >= minPlayers) {
-        matchStatusElement.textContent = `Mecz się ODBĘDZIE! 🎉 (${minPlayers}+ graczy)`;
-        matchStatusElement.style.color = 'green';
+
+    const isSummer = allData.summerBreak && allData.summerBreak.isActive;
+    const banner = document.getElementById('summer-banner');
+    const formsContainer = document.getElementById('registration-forms-container');
+    const disabledMessage = document.getElementById('registration-disabled-message');
+    const regInfoText = document.getElementById('registration-info-text');
+
+    if (isSummer) {
+        matchStatusElement.textContent = "Obecnie trwa przerwa wakacyjna. Gramy od września! ☀️🏐";
+        matchStatusElement.style.color = "#d69e2e";
+        
+        if (banner) banner.style.display = 'flex';
+        if (formsContainer) formsContainer.style.display = 'none';
+        if (disabledMessage) disabledMessage.style.display = 'block';
+        if (regInfoText) regInfoText.style.display = 'none';
+
+        // Pokaż modal jeśli nie został zamknięty w tym sezonie
+        const isClosed = localStorage.getItem('summerBreakPopupClosed_2026');
+        const modal = document.getElementById('summer-modal');
+        if (modal && !isClosed) {
+            modal.style.display = 'flex';
+        }
     } else {
-        matchStatusElement.textContent = `Mecz jeszcze się nie odbędzie. Brakuje ${minPlayers - allData.presentPlayers.length} graczy.`;
-        matchStatusElement.style.color = 'red';
+        if (allData.presentPlayers.length >= minPlayers) {
+            matchStatusElement.textContent = `Mecz się ODBĘDZIE! 🎉 (${minPlayers}+ graczy)`;
+            matchStatusElement.style.color = 'green';
+        } else {
+            matchStatusElement.textContent = `Mecz jeszcze się nie odbędzie. Brakuje ${minPlayers - allData.presentPlayers.length} graczy.`;
+            matchStatusElement.style.color = 'red';
+        }
+
+        if (banner) banner.style.display = 'none';
+        if (formsContainer) formsContainer.style.display = 'block';
+        if (disabledMessage) disabledMessage.style.display = 'none';
+        if (regInfoText) regInfoText.style.display = 'block';
     }
+
     renderShoutbox(allData.shoutboxMessages);
 }
 
@@ -221,15 +252,40 @@ shoutboxForm.addEventListener('submit', async (event) => {
     shoutboxMessageInput.value = '';
 });
 
+// Obsługa modala wakacyjnego
+function setupModal() {
+    const modal = document.getElementById('summer-modal');
+    const closeSpan = document.querySelector('.close-modal');
+    const closeBtn = document.getElementById('close-modal-btn');
+
+    const closeModal = () => {
+        if (modal) modal.style.display = 'none';
+        localStorage.setItem('summerBreakPopupClosed_2026', 'true');
+    };
+
+    if (closeSpan) closeSpan.addEventListener('click', closeModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+}
+
 // Wczytanie i renderowanie danych po załadowaniu strony
 document.addEventListener('DOMContentLoaded', async () => {
-    updateMatchDateTitle();
+    setupModal();
     await fetchData();
 });
 
-// Funkcja do daty (bez zmian)
+// Funkcja do daty
 function updateMatchDateTitle() {
     const title = document.querySelector('header h1');
+    if (allData.summerBreak && allData.summerBreak.isActive) {
+        title.textContent = `Zapisy na siatkówkę – Przerwa Wakacyjna ☀️`;
+        return;
+    }
     const today = new Date();
     const nextThursday = new Date(today);
     const dayOfWeek = today.getDay();

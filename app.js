@@ -14,6 +14,45 @@ const dataPath = path.join(__dirname, 'data.json');
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// --- POMOCNICZE FUNKCJE PRZERWY WAKACYJNEJ ---
+function getFirstThursdayOfSeptember(year) {
+    let d = new Date(year, 8, 1); // wrzesień (0-indexed 8)
+    while (d.getDay() !== 4) { // czwartek
+        d.setDate(d.getDate() + 1);
+    }
+    return d;
+}
+
+function getSecondToLastFridayOfJune(year) {
+    let d = new Date(year, 5, 30); // 30 czerwca (0-indexed 5)
+    while (d.getDay() !== 5) { // piątek
+        d.setDate(d.getDate() - 1);
+    }
+    d.setDate(d.getDate() - 7); // przedostatni piątek
+    return d;
+}
+
+function getSummerBreakConfig(date = new Date()) {
+    const year = date.getFullYear();
+    const firstThursdaySept = getFirstThursdayOfSeptember(year);
+    // Początek przerwy: przedostatni piątek czerwca (19.06.2026)
+    const startBreak = getSecondToLastFridayOfJune(year);
+    // Koniec przerwy: czwartek przed pierwszym czwartkiem września (27.08.2026)
+    const endBreak = new Date(firstThursdaySept);
+    endBreak.setDate(firstThursdaySept.getDate() - 7);
+    
+    startBreak.setHours(0, 0, 0, 0);
+    endBreak.setHours(23, 59, 59, 999);
+    
+    const isActive = date >= startBreak && date <= endBreak;
+    return {
+        isActive,
+        firstGameDate: firstThursdaySept,
+        startBreak,
+        endBreak
+    };
+}
+
 // --- UPROSZCZONE FUNKCJE ZAPISU I ODCZYTU ---
 
 // Funkcja do odczytu danych z pliku
@@ -54,6 +93,14 @@ function writeData(data) {
 // Funkcja archiwizacji (bez gita)
 function archiveAndResetLists() {
     console.log('Uruchamiam proces archiwizacji listy obecności...');
+    
+    // Sprawdzamy czy trwa przerwa wakacyjna
+    const breakConfig = getSummerBreakConfig();
+    if (breakConfig.isActive) {
+        console.log('Archiwizacja pominięta - trwa przerwa wakacyjna.');
+        return 'Archiwizacja pominięta ze względu na przerwę wakacyjną.';
+    }
+
     let data;
     try {
         data = readData();
@@ -123,7 +170,13 @@ async function sendEmailWithBackup(backupPath, dateString) {
 
 app.get('/api/data', (req, res) => {
     try {
-        res.json(readData());
+        const data = readData();
+        const breakConfig = getSummerBreakConfig();
+        data.summerBreak = {
+            isActive: breakConfig.isActive,
+            firstGameDate: breakConfig.firstGameDate.toISOString().split('T')[0]
+        };
+        res.json(data);
     } catch (error) {
         res.status(500).json({ message: 'Błąd podczas odczytu danych', error: error.message });
     }
@@ -131,6 +184,10 @@ app.get('/api/data', (req, res) => {
 
 app.post('/api/data', (req, res) => {
     try {
+        const breakConfig = getSummerBreakConfig();
+        if (breakConfig.isActive) {
+            return res.status(403).json({ message: 'Zapisy są wstrzymane na czas przerwy wakacyjnej.' });
+        }
         const currentData = readData();
         const { presentPlayers, absentPlayers } = req.body;
         currentData.presentPlayers = presentPlayers;
