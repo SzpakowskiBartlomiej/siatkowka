@@ -71,6 +71,13 @@ async function fetchData() {
         if (!Array.isArray(allData.presentPlayers)) allData.presentPlayers = [];
         if (!Array.isArray(allData.reservePlayers)) allData.reservePlayers = [];
         if (!Array.isArray(allData.absentPlayers)) allData.absentPlayers = [];
+
+        // Bezpiecznik: jeśli z serwera przyszło więcej niż 12 graczy a lista rezerwowa była pusta
+        if (allData.presentPlayers.length > maxPlayers && allData.reservePlayers.length === 0) {
+            allData.reservePlayers = allData.presentPlayers.slice(maxPlayers);
+            allData.presentPlayers = allData.presentPlayers.slice(0, maxPlayers);
+        }
+
         renderUI();
     } catch (error) {
         console.error('Błąd pobierania danych:', error);

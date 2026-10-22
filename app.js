@@ -101,10 +101,25 @@ function readData() {
         if (!Array.isArray(parsed.attendanceHistory)) parsed.attendanceHistory = [];
         if (!parsed.matchDate) parsed.matchDate = getCurrentOrNextMatchDate();
 
+        let needsSave = false;
         // Migracja: jeśli w presentPlayers było więcej niż 12 graczy a reservePlayers było puste
         if (parsed.presentPlayers.length > 12 && parsed.reservePlayers.length === 0) {
             parsed.reservePlayers = parsed.presentPlayers.slice(12);
             parsed.presentPlayers = parsed.presentPlayers.slice(0, 12);
+            needsSave = true;
+        }
+
+        if (!parsed.matchDate) {
+            parsed.matchDate = getCurrentOrNextMatchDate();
+            needsSave = true;
+        }
+
+        if (needsSave) {
+            try {
+                writeData(parsed);
+            } catch (err) {
+                console.error('Błąd podczas zapisu migracji:', err);
+            }
         }
 
         return parsed;
