@@ -95,6 +95,71 @@ footer {
     color: red;
     font-weight: bold;
 }
+
+/* Style dla Listy Rezerwowej */
+.reserve-list-section {
+    margin-top: 25px;
+    padding: 20px;
+    background: linear-gradient(135deg, #fffcf6 0%, #fff8eb 100%);
+    border: 1px solid #fbd38d;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(221, 107, 32, 0.08);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.reserve-header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.reserve-header-container h3 {
+    margin: 0;
+    color: #c05621;
+    font-size: 1.3em;
+}
+
+.reserve-badge {
+    background-color: #dd6b20;
+    color: #fff;
+    font-size: 0.8em;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.reserve-info-text {
+    margin: 8px 0 15px 0;
+    font-size: 0.9em;
+    color: #7b341e;
+    line-height: 1.4;
+}
+
+.reserve-list-section table {
+    margin-top: 10px;
+}
+
+.reserve-list-section th {
+    background-color: #dd6b20;
+    color: white;
+}
+
+.reserve-list-section tr:nth-child(even) {
+    background-color: #fff4e0;
+}
+
+#add-player-btn.reserve-mode {
+    background-color: #dd6b20;
+}
+
+#add-player-btn.reserve-mode:hover {
+    background-color: #c05621;
+}
+
 .absent-list-section {
     margin-top: 20px;
 }

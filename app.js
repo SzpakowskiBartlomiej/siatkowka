@@ -53,12 +53,38 @@ function getSummerBreakConfig(date = new Date()) {
     };
 }
 
+function getNextMatchDate(fromDate = new Date()) {
+    const d = new Date(fromDate);
+    const day = d.getDay();
+    let daysUntilThursday = (4 - day + 7) % 7;
+    if (daysUntilThursday === 0) {
+        daysUntilThursday = 7;
+    }
+    d.setDate(d.getDate() + daysUntilThursday);
+    return d.toISOString().split('T')[0];
+}
+
+function getCurrentOrNextMatchDate(fromDate = new Date()) {
+    const d = new Date(fromDate);
+    const day = d.getDay();
+    let daysUntilThursday = (4 - day + 7) % 7;
+    d.setDate(d.getDate() + daysUntilThursday);
+    return d.toISOString().split('T')[0];
+}
+
 // --- UPROSZCZONE FUNKCJE ZAPISU I ODCZYTU ---
 
 // Funkcja do odczytu danych z pliku
 function readData() {
     if (!fs.existsSync(dataPath)) {
-        const defaultData = { presentPlayers: [], absentPlayers: [], shoutboxMessages: [], attendanceHistory: [] };
+        const defaultData = {
+            presentPlayers: [],
+            reservePlayers: [],
+            absentPlayers: [],
+            shoutboxMessages: [],
+            attendanceHistory: [],
+            matchDate: getCurrentOrNextMatchDate()
+        };
         fs.writeFileSync(dataPath, JSON.stringify(defaultData, null, 2));
         return defaultData;
     }
@@ -67,7 +93,21 @@ function readData() {
         throw new Error('Plik data.json jest pusty');
     }
     try {
-        return JSON.parse(data);
+        const parsed = JSON.parse(data);
+        if (!Array.isArray(parsed.presentPlayers)) parsed.presentPlayers = [];
+        if (!Array.isArray(parsed.reservePlayers)) parsed.reservePlayers = [];
+        if (!Array.isArray(parsed.absentPlayers)) parsed.absentPlayers = [];
+        if (!Array.isArray(parsed.shoutboxMessages)) parsed.shoutboxMessages = [];
+        if (!Array.isArray(parsed.attendanceHistory)) parsed.attendanceHistory = [];
+        if (!parsed.matchDate) parsed.matchDate = getCurrentOrNextMatchDate();
+
+        // Migracja: jeśli w presentPlayers było więcej niż 12 graczy a reservePlayers było puste
+        if (parsed.presentPlayers.length > 12 && parsed.reservePlayers.length === 0) {
+            parsed.reservePlayers = parsed.presentPlayers.slice(12);
+            parsed.presentPlayers = parsed.presentPlayers.slice(0, 12);
+        }
+
+        return parsed;
     } catch (error) {
         console.error('Błąd podczas odczytu pliku data.json:', error);
         // Zgłaszamy błąd, aby nie nadpisać uszkodzonego pliku pustą strukturą
@@ -112,11 +152,13 @@ function archiveAndResetLists() {
     let message = 'Nie było zapisanych graczy. Listy zostały wyczyszczone.';
 
     if (data.presentPlayers && data.presentPlayers.length > 0) {
-        const gameDate = new Date();
-        const dayOfWeek = gameDate.getDay();
-        const daysToSubtract = (dayOfWeek + 3) % 7;
-        gameDate.setDate(gameDate.getDate() - daysToSubtract);
-        const dateString = gameDate.toISOString().split('T')[0];
+        const dateString = data.matchDate || (() => {
+            const gameDate = new Date();
+            const dayOfWeek = gameDate.getDay();
+            const daysToSubtract = (dayOfWeek + 3) % 7;
+            gameDate.setDate(gameDate.getDate() - daysToSubtract);
+            return gameDate.toISOString().split('T')[0];
+        })();
 
         const newHistoryEntry = {
             date: dateString,
@@ -128,7 +170,9 @@ function archiveAndResetLists() {
     }
 
     data.presentPlayers = [];
+    data.reservePlayers = [];
     data.absentPlayers = [];
+    data.matchDate = getNextMatchDate();
     writeData(data); // Prosty zapis do pliku
 
     console.log(message);
@@ -189,9 +233,10 @@ app.post('/api/data', (req, res) => {
             return res.status(403).json({ message: 'Zapisy są wstrzymane na czas przerwy wakacyjnej.' });
         }
         const currentData = readData();
-        const { presentPlayers, absentPlayers } = req.body;
-        currentData.presentPlayers = presentPlayers;
-        currentData.absentPlayers = absentPlayers;
+        const { presentPlayers, reservePlayers, absentPlayers } = req.body;
+        currentData.presentPlayers = Array.isArray(presentPlayers) ? presentPlayers : [];
+        currentData.reservePlayers = Array.isArray(reservePlayers) ? reservePlayers : [];
+        currentData.absentPlayers = Array.isArray(absentPlayers) ? absentPlayers : [];
         writeData(currentData); // Prosty zapis
         res.status(200).json({ message: 'Dane graczy zostały pomyślnie zaktualizowane' });
     } catch (error) {

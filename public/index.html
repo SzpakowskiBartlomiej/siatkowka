@@ -14,7 +14,7 @@
     <header>
         <h1>Zapisy na siatkówkę</h1>
         <p>Szkoła Podstawowa nr 13 w Siemianowicach Śląskich - Michałkowicach, ul. Barlickiego 2</p>
-        <p>Gramy w każdy czwartek w godzinach 19:30 - 21:40</p>
+        <p>Gramy w każdy czwartek w godzinach 19:40 - 21:50</p>
         <p>Płatność 12 zł do Jacka gotówką lub blikiem na numer 501 412 701</p>
     </header>
 
@@ -39,6 +39,24 @@
                     </tr>
                 </thead>
                 <tbody id="player-table-body">
+                </tbody>
+            </table>
+        </section>
+
+        <section class="reserve-list-section" id="reserve-section" style="display: none;">
+            <div class="reserve-header-container">
+                <h3 id="reserve-count">Lista rezerwowa</h3>
+                <span class="reserve-badge">Oczekujący</span>
+            </div>
+            <p class="reserve-info-text">Główna lista ma komplet (12 osób). Osoby z listy rezerwowej automatycznie wskakują na listę główną w przypadku rezygnacji innego gracza.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Lp.</th>
+                        <th>Imię/Pseudonim</th>
+                    </tr>
+                </thead>
+                <tbody id="reserve-table-body">
                 </tbody>
             </table>
         </section>
