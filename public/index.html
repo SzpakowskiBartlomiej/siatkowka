@@ -27,10 +27,10 @@
         </div>
 
         <section class="player-list-section">
-            <h2 id="player-count">Zapisani gracze: 0</h2>
+            <h2 id="player-count"><span class="skeleton-box" style="width: 220px; height: 26px;"></span></h2>
             <p id="registration-info-text">Zapisy trwają do czwartku do godz. 16:00. Jeśli zbierze się 8 lub więcej
                 osób, mecz się odbędzie.</p>
-            <h3 id="match-status"></h3>
+            <h3 id="match-status"><span class="skeleton-box" style="width: 280px; height: 20px;"></span></h3>
             <table>
                 <thead>
                     <tr>
@@ -39,6 +39,12 @@
                     </tr>
                 </thead>
                 <tbody id="player-table-body">
+                    <tr class="skeleton-row"><td><span class="skeleton-box" style="width: 20px;"></span></td><td><span class="skeleton-box" style="width: 140px;"></span></td></tr>
+                    <tr class="skeleton-row"><td><span class="skeleton-box" style="width: 20px;"></span></td><td><span class="skeleton-box" style="width: 110px;"></span></td></tr>
+                    <tr class="skeleton-row"><td><span class="skeleton-box" style="width: 20px;"></span></td><td><span class="skeleton-box" style="width: 160px;"></span></td></tr>
+                    <tr class="skeleton-row"><td><span class="skeleton-box" style="width: 20px;"></span></td><td><span class="skeleton-box" style="width: 125px;"></span></td></tr>
+                    <tr class="skeleton-row"><td><span class="skeleton-box" style="width: 20px;"></span></td><td><span class="skeleton-box" style="width: 150px;"></span></td></tr>
+                    <tr class="skeleton-row"><td><span class="skeleton-box" style="width: 20px;"></span></td><td><span class="skeleton-box" style="width: 95px;"></span></td></tr>
                 </tbody>
             </table>
         </section>
@@ -70,6 +76,7 @@
                     </tr>
                 </thead>
                 <tbody id="absent-table-body">
+                    <tr class="skeleton-row"><td><span class="skeleton-box" style="width: 110px;"></span></td></tr>
                 </tbody>
             </table>
         </section>
@@ -111,6 +118,8 @@
                 <button type="submit" id="add-shoutbox-btn">Wyślij</button>
             </form>
             <div id="shoutbox-messages">
+                <div class="skeleton-message"><span class="skeleton-box" style="width: 80px;"></span><span class="skeleton-box" style="width: 60%;"></span></div>
+                <div class="skeleton-message"><span class="skeleton-box" style="width: 80px;"></span><span class="skeleton-box" style="width: 40%;"></span></div>
             </div>
             <div id="shoutbox-pagination" class="pagination-container"></div>
         </section>

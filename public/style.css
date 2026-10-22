@@ -22,6 +22,38 @@ header, main, footer {
     box-sizing: border-box;
 }
 
+/* --- SKELETON LOADER --- */
+.skeleton-box {
+    display: inline-block;
+    height: 18px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s ease-in-out infinite;
+    vertical-align: middle;
+}
+
+@keyframes skeletonShimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.skeleton-row td {
+    padding: 14px 12px;
+}
+
+.skeleton-message {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 header {
     text-align: center;
 }
